@@ -28,6 +28,10 @@ import com.mrcrayfish.modelcreator.panels.tabs.ElementPanel;
 import com.mrcrayfish.modelcreator.panels.tabs.FacePanel;
 import com.mrcrayfish.modelcreator.panels.tabs.RotationPanel;
 import com.mrcrayfish.modelcreator.texture.PendingTexture;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
+import com.mrcrayfish.modelcreator.util.undo.CreateCubeTask;
+import com.mrcrayfish.modelcreator.util.undo.RemoveCubeTask;
+import com.mrcrayfish.modelcreator.util.undo.RenameCubeTask;
 
 public class SidebarPanel extends JPanel implements ElementManager
 {
@@ -71,6 +75,7 @@ public class SidebarPanel extends JPanel implements ElementManager
 		btnAdd.setToolTipText("New Element");
 		btnAdd.addActionListener(e ->
 		{
+			UndoQueue.push(new CreateCubeTask(model, list));
 			model.addElement(new Element(1, 1, 1));
 			list.setSelectedIndex(model.size() - 1);
 		});
@@ -84,6 +89,7 @@ public class SidebarPanel extends JPanel implements ElementManager
 			int selected = list.getSelectedIndex();
 			if (selected != -1)
 			{
+				UndoQueue.push(new RemoveCubeTask(model, list, name, tabbedPane));
 				model.remove(selected);
 				name.setText("");
 				name.setEnabled(false);
@@ -120,7 +126,15 @@ public class SidebarPanel extends JPanel implements ElementManager
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					updateName();
+					Element cube = getSelectedElement();
+					if (cube != null)
+					{
+						String newName = name.getText();
+						if (newName.isEmpty())
+							name.setText("Cube");
+						
+						updateName();
+					}
 				}
 			}
 		});
@@ -225,10 +239,13 @@ public class SidebarPanel extends JPanel implements ElementManager
 	{
 		String newName = name.getText();
 		if (newName.isEmpty())
-			newName = "Cuboid";
+			newName = "Cube";
 		Element cube = getSelectedElement();
+				
 		if (cube != null)
 		{
+			UndoQueue.push(new RenameCubeTask(cube, name, list));
+			
 			cube.setName(newName);
 			name.setText(newName);
 			list.updateUI();

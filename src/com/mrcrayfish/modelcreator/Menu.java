@@ -2,6 +2,7 @@ package com.mrcrayfish.modelcreator;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
@@ -13,6 +14,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -20,6 +22,9 @@ import com.mrcrayfish.modelcreator.screenshot.PendingScreenshot;
 import com.mrcrayfish.modelcreator.screenshot.Screenshot;
 import com.mrcrayfish.modelcreator.screenshot.ScreenshotCallback;
 import com.mrcrayfish.modelcreator.screenshot.Uploader;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
+import com.mrcrayfish.modelcreator.util.UndoQueue.RedoQueueEmptyException;
+import com.mrcrayfish.modelcreator.util.UndoQueue.UndoQueueEmptyException;
 import com.mrcrayfish.modelcreator.util.Util;
 import com.mrcrayfish.modelcreator.util.ResourceUtil;
 
@@ -39,6 +44,11 @@ public class Menu extends JMenuBar
 	private JMenuItem itemTexturePath;
 	private JMenuItem itemExit;
 
+	/* Edit */
+	private JMenu menuEdit;
+	private JMenuItem itemUndo;
+	private JMenuItem itemRedo;
+	
 	/* Options */
 	private JMenu menuOptions;
 	private JMenuItem itemTransparency;
@@ -80,6 +90,12 @@ public class Menu extends JMenuBar
 			itemExit = createItem("Exit", "Exit Application", KeyEvent.VK_E, new ImageIcon(ResourceUtil.getResource("icons/exit.png")));
 		}
 
+		menuEdit = new JMenu("Edit");
+		{
+			itemUndo = createItem("Undo", "Undo", KeyEvent.VK_Z, null);
+			itemRedo = createItem("Redo", "Redo", KeyEvent.VK_Y, null);
+		}
+		
 		menuOptions = new JMenu("Options");
 		{
 			itemTransparency = createItem("Toggle Transparency", "Enables transparent rendering in program", KeyEvent.VK_E, Icons.transparent);
@@ -141,7 +157,11 @@ public class Menu extends JMenuBar
 		menuFile.addSeparator();
 		menuFile.add(itemExit);
 
+		menuEdit.add(itemUndo);
+		menuEdit.add(itemRedo);
+		
 		add(menuFile);
+		add(menuEdit);
 		add(menuOptions);
 		add(menuScreenshot);
 		add(menuHelp);
@@ -229,6 +249,33 @@ public class Menu extends JMenuBar
 			}
 		});
 
+		itemUndo.addActionListener(a ->
+		{
+			try
+			{
+				UndoQueue.Task task = UndoQueue.pop();
+				task.undo();
+			}
+			catch (UndoQueueEmptyException e)
+			{
+			}			
+		});
+
+		itemRedo.addActionListener(a ->
+		{
+			try
+			{
+				UndoQueue.Task nextTask = UndoQueue.next();
+				nextTask.redo();
+			}
+			catch (RedoQueueEmptyException e)
+			{
+			}
+		});
+		
+		itemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+		itemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+		
 		itemImport.addActionListener(e ->
 		{
 			JFileChooser chooser = new JFileChooser();

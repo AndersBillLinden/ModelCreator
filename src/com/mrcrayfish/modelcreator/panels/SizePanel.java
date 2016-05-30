@@ -20,6 +20,13 @@ import com.mrcrayfish.modelcreator.Icons;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.util.Parser;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
+import com.mrcrayfish.modelcreator.util.undo.CubeAddDepthTask;
+import com.mrcrayfish.modelcreator.util.undo.CubeAddHeightTask;
+import com.mrcrayfish.modelcreator.util.undo.CubeAddWidthTask;
+import com.mrcrayfish.modelcreator.util.undo.CubeSetDepthTask;
+import com.mrcrayfish.modelcreator.util.undo.CubeSetHeightTask;
+import com.mrcrayfish.modelcreator.util.undo.CubeSetWidthTask;
 
 public class SizePanel extends JPanel implements IValueUpdater
 {
@@ -65,6 +72,19 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 	public void initProperties()
 	{
+		Runnable trySetWidth = () ->
+		{
+			Element element = manager.getSelectedElement();
+			if (element != null)
+			{
+				double width = Parser.parseDouble(xSizeField.getText(), element.getWidth());
+				UndoQueue.push(new CubeSetWidthTask(element, width, manager));
+				element.setWidth(width);
+				element.updateUV();
+				manager.updateValues();
+			}			
+		};
+		
 		Font defaultFont = new Font("SansSerif", Font.BOLD, 20);
 		xSizeField.setSize(new Dimension(62, 30));
 		xSizeField.setFont(defaultFont);
@@ -76,14 +96,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setWidth(Parser.parseDouble(xSizeField.getText(), element.getWidth()));
-						element.updateUV();
-						manager.updateValues();
-					}
-
+					trySetWidth.run();
 				}
 			}
 		});
@@ -92,16 +105,23 @@ public class SizePanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setWidth(Parser.parseDouble(xSizeField.getText(), element.getWidth()));
-					element.updateUV();
-					manager.updateValues();
-				}
+				trySetWidth.run();
 			}
 		});
 
+		Runnable trySetHeight = () ->
+		{
+			Element element = manager.getSelectedElement();
+			if (element != null)
+			{
+				double height = Parser.parseDouble(ySizeField.getText(), element.getHeight());
+				UndoQueue.push(new CubeSetHeightTask(element, height, manager));
+				element.setHeight(height);
+				element.updateUV();
+				manager.updateValues();
+			}			
+		};
+		
 		ySizeField.setSize(new Dimension(62, 30));
 		ySizeField.setFont(defaultFont);
 		ySizeField.setHorizontalAlignment(JTextField.CENTER);
@@ -112,14 +132,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setHeight(Parser.parseDouble(ySizeField.getText(), element.getHeight()));
-						element.updateUV();
-						manager.updateValues();
-					}
-
+					trySetHeight.run();
 				}
 			}
 		});
@@ -128,16 +141,20 @@ public class SizePanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setHeight(Parser.parseDouble(ySizeField.getText(), element.getHeight()));
-					element.updateUV();
-					manager.updateValues();
-				}
+				trySetHeight.run();
 			}
 		});
 
+		Runnable trySetDepth = () ->
+		{
+			Element element = manager.getSelectedElement();
+			double depth = Parser.parseDouble(zSizeField.getText(), element.getDepth());
+			UndoQueue.push(new CubeSetDepthTask(element, depth, manager));
+			element.setDepth(depth);
+			element.updateUV();
+			manager.updateValues();
+		};
+		
 		zSizeField.setSize(new Dimension(62, 30));
 		zSizeField.setFont(defaultFont);
 		zSizeField.setHorizontalAlignment(JTextField.CENTER);
@@ -148,14 +165,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setDepth(Parser.parseDouble(zSizeField.getText(), element.getDepth()));
-						element.updateUV();
-						manager.updateValues();
-					}
-
+					trySetDepth.run();
 				}
 			}
 		});
@@ -164,13 +174,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setDepth(Parser.parseDouble(zSizeField.getText(), element.getDepth()));
-					element.updateUV();
-					manager.updateValues();
-				}
+				trySetDepth.run();
 			}
 		});
 
@@ -181,10 +185,12 @@ public class SizePanel extends JPanel implements IValueUpdater
 				Element cube = manager.getSelectedElement();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new CubeAddWidthTask(cube, 0.1F, manager));
 					cube.addWidth(0.1F);
 				}
 				else
 				{
+					UndoQueue.push(new CubeAddWidthTask(cube, 1.0F, manager));
 					cube.addWidth(1.0F);
 				}
 				cube.updateUV();
@@ -202,10 +208,12 @@ public class SizePanel extends JPanel implements IValueUpdater
 				Element cube = manager.getSelectedElement();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new CubeAddHeightTask(cube, 0.1F, manager));
 					cube.addHeight(0.1F);
 				}
 				else
 				{
+					UndoQueue.push(new CubeAddHeightTask(cube, 1.0F, manager));
 					cube.addHeight(1.0F);
 				}
 				cube.updateUV();
@@ -223,10 +231,12 @@ public class SizePanel extends JPanel implements IValueUpdater
 				Element cube = manager.getSelectedElement();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new CubeAddDepthTask(cube, 0.1F, manager));
 					cube.addDepth(0.1F);
 				}
 				else
 				{
+					UndoQueue.push(new CubeAddDepthTask(cube, 1.0F, manager));					
 					cube.addDepth(1.0F);
 				}
 				cube.updateUV();
@@ -244,10 +254,12 @@ public class SizePanel extends JPanel implements IValueUpdater
 				Element cube = manager.getSelectedElement();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new CubeAddWidthTask(cube, -0.1F, manager));
 					cube.addWidth(-0.1F);
 				}
 				else
 				{
+					UndoQueue.push(new CubeAddWidthTask(cube, -1.0F, manager));
 					cube.addWidth(-1.0F);
 				}
 				cube.updateUV();
@@ -265,10 +277,12 @@ public class SizePanel extends JPanel implements IValueUpdater
 				Element cube = manager.getSelectedElement();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new CubeAddHeightTask(cube, -0.1F, manager));
 					cube.addHeight(-0.1F);
 				}
 				else
 				{
+					UndoQueue.push(new CubeAddHeightTask(cube, -1.0F, manager));
 					cube.addHeight(-1.0F);
 				}
 				cube.updateUV();
@@ -286,10 +300,12 @@ public class SizePanel extends JPanel implements IValueUpdater
 				Element cube = manager.getSelectedElement();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new CubeAddDepthTask(cube, -0.1F, manager));
 					cube.addDepth(-0.1F);
 				}
 				else
 				{
+					UndoQueue.push(new CubeAddDepthTask(cube, -1.0F, manager));
 					cube.addDepth(-1.0F);
 				}
 				cube.updateUV();

@@ -21,6 +21,11 @@ import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.element.Face;
 import com.mrcrayfish.modelcreator.util.Parser;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
+import com.mrcrayfish.modelcreator.util.undo.UChangeTask;
+import com.mrcrayfish.modelcreator.util.undo.UEndChangeTask;
+import com.mrcrayfish.modelcreator.util.undo.VChangeTask;
+import com.mrcrayfish.modelcreator.util.undo.VEndChangeTask;
 
 public class UVPanel extends JPanel implements IValueUpdater
 {
@@ -223,10 +228,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new UChangeTask(0.1, cube, face, manager));
 					face.addTextureX(0.1);
 				}
 				else
 				{
+					UndoQueue.push(new UChangeTask(1.0, cube, face, manager));
 					face.addTextureX(1.0);
 				}
 				cube.updateUV();
@@ -246,10 +253,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new VChangeTask(0.1, cube, face, manager));
 					face.addTextureY(0.1);
 				}
 				else
 				{
+					UndoQueue.push(new VChangeTask(1.0, cube, face, manager));
 					face.addTextureY(1.0);
 				}
 				cube.updateUV();
@@ -268,10 +277,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new UChangeTask(-0.1, cube, face, manager));
 					face.addTextureX(-0.1);
 				}
 				else
 				{
+					UndoQueue.push(new UChangeTask(-1.0, cube, face, manager));
 					face.addTextureX(-1.0);
 				}
 				cube.updateUV();
@@ -290,10 +301,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new VChangeTask(-0.1, cube, face, manager));
 					face.addTextureY(-0.1);
 				}
 				else
 				{
+					UndoQueue.push(new VChangeTask(-1.0, cube, face, manager));
 					face.addTextureY(-1.0);
 				}
 				cube.updateUV();
@@ -312,10 +325,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new UEndChangeTask(0.1, cube, face, manager));
 					face.addTextureXEnd(0.1);
 				}
 				else
 				{
+					UndoQueue.push(new UEndChangeTask(1.0, cube, face, manager));
 					face.addTextureXEnd(1.0);
 				}
 				face.setAutoUVEnabled(false);
@@ -334,10 +349,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new VEndChangeTask(0.1, cube, face, manager));
 					face.addTextureYEnd(0.1);
 				}
 				else
 				{
+					UndoQueue.push(new VEndChangeTask(1.0, cube, face, manager));
 					face.addTextureYEnd(1.0);
 				}
 				face.setAutoUVEnabled(false);
@@ -356,10 +373,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new UEndChangeTask(-0.1, cube, face, manager));
 					face.addTextureXEnd(-0.1);
 				}
 				else
 				{
+					UndoQueue.push(new UEndChangeTask(-1.0, cube, face, manager));
 					face.addTextureXEnd(-1.0);
 				}
 				face.setAutoUVEnabled(false);
@@ -378,10 +397,12 @@ public class UVPanel extends JPanel implements IValueUpdater
 				Face face = cube.getSelectedFace();
 				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
 				{
+					UndoQueue.push(new VEndChangeTask(-0.1, cube, face, manager));
 					face.addTextureYEnd(-0.1);
 				}
 				else
 				{
+					UndoQueue.push(new VEndChangeTask(-1.0, cube, face, manager));
 					face.addTextureYEnd(-1.0);
 				}
 				face.setAutoUVEnabled(false);
