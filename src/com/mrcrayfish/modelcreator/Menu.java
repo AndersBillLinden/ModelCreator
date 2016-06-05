@@ -255,6 +255,7 @@ public class Menu extends JMenuBar
 			{
 				UndoQueue.Task task = UndoQueue.pop();
 				task.undo();
+				task.update();
 			}
 			catch (UndoQueueEmptyException e)
 			{
@@ -266,7 +267,8 @@ public class Menu extends JMenuBar
 			try
 			{
 				UndoQueue.Task nextTask = UndoQueue.next();
-				nextTask.redo();
+				nextTask.perform();
+				nextTask.update();
 			}
 			catch (RedoQueueEmptyException e)
 			{

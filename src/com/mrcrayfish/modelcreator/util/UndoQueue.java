@@ -5,13 +5,18 @@ public class UndoQueue
 	public static Task undoHead = null;
 	public static Task redoHead = null;
 	
-	public static void push(Task task)
+	public static void performPush(Task task)
 	{
+		task.perform();
+		task.update();
+
 		if (undoHead != null)
 			undoHead.next = task;
 		
 		task.prev = undoHead;
 		undoHead = task;
+		
+		redoHead = null;
 	}
 	
 	public static Task next() throws RedoQueueEmptyException
@@ -42,8 +47,9 @@ public class UndoQueue
 		Task prev = null;
 		Task next = null;
 		
+		public abstract void perform();
 		public abstract void undo();
-		public abstract void redo();
+		public abstract void update();
 	}
 
 	public static class UndoQueueEmptyException extends Exception

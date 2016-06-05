@@ -29,9 +29,6 @@ import com.mrcrayfish.modelcreator.panels.tabs.FacePanel;
 import com.mrcrayfish.modelcreator.panels.tabs.RotationPanel;
 import com.mrcrayfish.modelcreator.texture.PendingTexture;
 import com.mrcrayfish.modelcreator.util.UndoQueue;
-import com.mrcrayfish.modelcreator.util.undo.CreateCubeTask;
-import com.mrcrayfish.modelcreator.util.undo.RemoveCubeTask;
-import com.mrcrayfish.modelcreator.util.undo.RenameCubeTask;
 
 public class SidebarPanel extends JPanel implements ElementManager
 {
@@ -75,10 +72,27 @@ public class SidebarPanel extends JPanel implements ElementManager
 		btnAdd.setToolTipText("New Element");
 		btnAdd.addActionListener(e ->
 		{
-			UndoQueue.push(new CreateCubeTask(model, list));
-			model.addElement(new Element(1, 1, 1));
-			list.setSelectedIndex(model.size() - 1);
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				Element element;
+				public void perform()
+				{
+					element = new Element(1, 1, 1);
+					model.addElement(element);
+				}
+
+				public void undo()
+				{
+					model.removeElement(element);
+				}
+
+				public void update()
+				{
+					list.setSelectedIndex(model.size() - 1);
+				}
+			});
 		});
+
 		btnAdd.setPreferredSize(new Dimension(30, 30));
 		btnContainer.add(btnAdd);
 
@@ -86,15 +100,33 @@ public class SidebarPanel extends JPanel implements ElementManager
 		btnRemove.setToolTipText("Remove Element");
 		btnRemove.addActionListener(e ->
 		{
-			int selected = list.getSelectedIndex();
-			if (selected != -1)
+			int index = list.getSelectedIndex();
+			if (index != -1)
 			{
-				UndoQueue.push(new RemoveCubeTask(model, list, name, tabbedPane));
-				model.remove(selected);
-				name.setText("");
-				name.setEnabled(false);
-				tabbedPane.updateValues();
-				list.setSelectedIndex(selected);
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					Element element;
+					
+					public void perform()
+					{
+						element = list.getSelectedValue();
+						model.remove(index);
+						name.setText("");
+						name.setEnabled(false);
+					}
+					
+					public void undo()
+					{
+						model.insertElementAt(element, index);
+						name.setText(element.getName());
+					}
+
+					public void update()
+					{
+						list.setSelectedIndex(index);
+						tabbedPane.updateValues();
+					}					
+				});
 			}
 		});
 		btnRemove.setPreferredSize(new Dimension(30, 30));
@@ -237,18 +269,32 @@ public class SidebarPanel extends JPanel implements ElementManager
 	@Override
 	public void updateName()
 	{
-		String newName = name.getText();
-		if (newName.isEmpty())
-			newName = "Cube";
-		Element cube = getSelectedElement();
-				
+		Element cube = getSelectedElement();				
 		if (cube != null)
 		{
-			UndoQueue.push(new RenameCubeTask(cube, name, list));
+			String nameString = name.getText();
+			String newName = !nameString.isEmpty() ? nameString : "Cube";
+			String oldName = cube.getName();
 			
-			cube.setName(newName);
-			name.setText(newName);
-			list.updateUI();
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				public void perform()
+				{
+					cube.setName(newName);
+					name.setText(newName);					
+				}
+
+				public void undo()
+				{
+					cube.setName(oldName);
+					name.setText(oldName);					
+				}
+
+				public void update()
+				{
+					list.updateUI();
+				}
+			});
 		}
 	}
 

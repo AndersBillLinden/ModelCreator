@@ -21,12 +21,6 @@ import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.util.Parser;
 import com.mrcrayfish.modelcreator.util.UndoQueue;
-import com.mrcrayfish.modelcreator.util.undo.CubeAddDepthTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeAddHeightTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeAddWidthTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeSetDepthTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeSetHeightTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeSetWidthTask;
 
 public class SizePanel extends JPanel implements IValueUpdater
 {
@@ -77,11 +71,27 @@ public class SizePanel extends JPanel implements IValueUpdater
 			Element element = manager.getSelectedElement();
 			if (element != null)
 			{
-				double width = Parser.parseDouble(xSizeField.getText(), element.getWidth());
-				UndoQueue.push(new CubeSetWidthTask(element, width, manager));
-				element.setWidth(width);
-				element.updateUV();
-				manager.updateValues();
+				double oldWidth = element.getWidth();
+				double newWidth = Parser.parseDouble(xSizeField.getText(), element.getWidth());
+				
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setWidth(newWidth);
+					}
+	
+					public void undo()
+					{
+						element.setWidth(oldWidth);
+					}
+	
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
 			}			
 		};
 		
@@ -114,11 +124,27 @@ public class SizePanel extends JPanel implements IValueUpdater
 			Element element = manager.getSelectedElement();
 			if (element != null)
 			{
-				double height = Parser.parseDouble(ySizeField.getText(), element.getHeight());
-				UndoQueue.push(new CubeSetHeightTask(element, height, manager));
-				element.setHeight(height);
-				element.updateUV();
-				manager.updateValues();
+				double oldHeight = element.getHeight();
+				double newHeight = Parser.parseDouble(ySizeField.getText(), element.getHeight());
+				
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setHeight(newHeight);
+					}
+	
+					public void undo()
+					{
+						element.setHeight(oldHeight);
+					}
+	
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
 			}			
 		};
 		
@@ -148,11 +174,30 @@ public class SizePanel extends JPanel implements IValueUpdater
 		Runnable trySetDepth = () ->
 		{
 			Element element = manager.getSelectedElement();
-			double depth = Parser.parseDouble(zSizeField.getText(), element.getDepth());
-			UndoQueue.push(new CubeSetDepthTask(element, depth, manager));
-			element.setDepth(depth);
-			element.updateUV();
-			manager.updateValues();
+			if (element != null)
+			{
+				double oldDepth = element.getDepth();
+				double newDepth = Parser.parseDouble(zSizeField.getText(), element.getDepth());
+				
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setDepth(newDepth);
+					}
+	
+					public void undo()
+					{
+						element.setDepth(oldDepth);
+					}
+	
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
+			}			
 		};
 		
 		zSizeField.setSize(new Dimension(62, 30));
@@ -180,21 +225,29 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnPlusX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+				
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddWidthTask(cube, 0.1F, manager));
-					cube.addWidth(0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddWidthTask(cube, 1.0F, manager));
-					cube.addWidth(1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
+					public void perform()
+					{
+						cube.addWidth(delta);
+					}
+
+					public void undo()
+					{
+						cube.addWidth(-delta);				
+					}
+
+					public void update()
+					{
+						cube.updateUV();
+						manager.updateValues();
+					}
+				});				
 			}
 		});
 		btnPlusX.setPreferredSize(new Dimension(62, 30));
@@ -203,21 +256,29 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnPlusY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+				
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddHeightTask(cube, 0.1F, manager));
-					cube.addHeight(0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddHeightTask(cube, 1.0F, manager));
-					cube.addHeight(1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
+					public void perform()
+					{
+						cube.addHeight(delta);
+					}
+
+					public void undo()
+					{
+						cube.addHeight(-delta);				
+					}
+
+					public void update()
+					{
+						cube.updateUV();
+						manager.updateValues();
+					}
+				});				
 			}
 		});
 		btnPlusY.setPreferredSize(new Dimension(62, 30));
@@ -226,21 +287,29 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnPlusZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+				
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddDepthTask(cube, 0.1F, manager));
-					cube.addDepth(0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddDepthTask(cube, 1.0F, manager));					
-					cube.addDepth(1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
+					public void perform()
+					{
+						cube.addDepth(delta);
+					}
+
+					public void undo()
+					{
+						cube.addDepth(-delta);				
+					}
+
+					public void update()
+					{
+						cube.updateUV();
+						manager.updateValues();
+					}
+				});				
 			}
 		});
 		btnPlusZ.setPreferredSize(new Dimension(62, 30));
@@ -249,21 +318,29 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnNegX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+				
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddWidthTask(cube, -0.1F, manager));
-					cube.addWidth(-0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddWidthTask(cube, -1.0F, manager));
-					cube.addWidth(-1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
+					public void perform()
+					{
+						cube.addWidth(delta);
+					}
+
+					public void undo()
+					{
+						cube.addWidth(-delta);
+					}
+
+					public void update()
+					{
+						cube.updateUV();
+						manager.updateValues();
+					}
+				});				
 			}
 		});
 		btnNegX.setPreferredSize(new Dimension(62, 30));
@@ -272,21 +349,29 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnNegY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+				
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddHeightTask(cube, -0.1F, manager));
-					cube.addHeight(-0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddHeightTask(cube, -1.0F, manager));
-					cube.addHeight(-1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
+					public void perform()
+					{
+						cube.addHeight(delta);
+					}
+
+					public void undo()
+					{
+						cube.addHeight(-delta);
+					}
+
+					public void update()
+					{
+						cube.updateUV();
+						manager.updateValues();
+					}
+				});				
 			}
 		});
 		btnNegY.setPreferredSize(new Dimension(62, 30));
@@ -295,21 +380,29 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnNegZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+				
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddDepthTask(cube, -0.1F, manager));
-					cube.addDepth(-0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddDepthTask(cube, -1.0F, manager));
-					cube.addDepth(-1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
+					public void perform()
+					{
+						cube.addDepth(delta);
+					}
+
+					public void undo()
+					{
+						cube.addDepth(-delta);				
+					}
+
+					public void update()
+					{
+						cube.updateUV();
+						manager.updateValues();
+					}
+				});				
 			}
 		});
 		btnNegZ.setPreferredSize(new Dimension(62, 30));

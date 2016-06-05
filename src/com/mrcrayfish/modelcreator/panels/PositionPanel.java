@@ -21,9 +21,6 @@ import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.util.Parser;
 import com.mrcrayfish.modelcreator.util.UndoQueue;
-import com.mrcrayfish.modelcreator.util.undo.CubeAddStartXTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeAddStartYTask;
-import com.mrcrayfish.modelcreator.util.undo.CubeAddStartZTask;
 
 public class PositionPanel extends JPanel implements IValueUpdater
 {
@@ -76,10 +73,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 			Element element = manager.getSelectedElement();
 			if (element != null)
 			{
-				element.setStartX(Parser.parseDouble(xPositionField.getText(), element.getStartX()));
-				element.updateUV();
-				manager.updateValues();
-			}	
+				double oldStartX = element.getStartX();
+				double newStartX = Parser.parseDouble(xPositionField.getText(), element.getStartX());
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setStartX(newStartX);
+					}
+
+					public void undo()
+					{
+						element.setStartX(oldStartX);
+					}
+
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
+			}
 		};
 		
 		Font defaultFont = new Font("SansSerif", Font.BOLD, 20);
@@ -115,10 +129,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 			Element element = manager.getSelectedElement();
 			if (element != null)
 			{
-				element.setStartY(Parser.parseDouble(yPositionField.getText(), element.getStartY()));
-				element.updateUV();
-				manager.updateValues();
-			}			
+				double oldStartY = element.getStartY();
+				double newStartY = Parser.parseDouble(yPositionField.getText(), element.getStartY());
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setStartZ(newStartY);
+					}
+
+					public void undo()
+					{
+						element.setStartZ(oldStartY);
+					}
+
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
+			}
 		};
 		
 		yPositionField.setSize(new Dimension(62, 30));
@@ -153,9 +184,26 @@ public class PositionPanel extends JPanel implements IValueUpdater
 			Element element = manager.getSelectedElement();
 			if (element != null)
 			{
-				element.setStartZ(Parser.parseDouble(zPositionField.getText(), element.getStartZ()));
-				element.updateUV();
-				manager.updateValues();
+				double oldStartZ = element.getStartZ();
+				double newStartZ = Parser.parseDouble(zPositionField.getText(), element.getStartZ());
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setStartZ(newStartZ);
+					}
+
+					public void undo()
+					{
+						element.setStartZ(oldStartZ);
+					}
+
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
 			}
 		};
 		
@@ -185,20 +233,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 		btnPlusX.addActionListener(e ->
 		{
 			System.out.println("Hey");
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddStartXTask(cube, 0.1F, xPositionField));
-					cube.addStartX(0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddStartXTask(cube, 1.0F, xPositionField));
-					cube.addStartX(1.0F);
-				}
-				xPositionField.setText(df.format(cube.getStartX()));
+					public void perform()
+					{
+						cube.addStartX(delta);
+					}
+
+					public void undo()
+					{
+						cube.addStartX(-delta);				
+					}
+
+					public void update()
+					{
+						xPositionField.setText(df.format(cube.getStartX()));
+					}
+				});
 			}
 		});
 		btnPlusX.setPreferredSize(new Dimension(62, 30));
@@ -207,20 +262,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 
 		btnPlusY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddStartYTask(cube, 0.1F, yPositionField));
-					cube.addStartY(0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddStartYTask(cube, 1.0F, yPositionField));
-					cube.addStartY(1.0F);
-				}
-				yPositionField.setText(df.format(cube.getStartY()));
+					public void perform()
+					{
+						cube.addStartY(delta);
+					}
+
+					public void undo()
+					{
+						cube.addStartY(-delta);				
+					}
+
+					public void update()
+					{
+						yPositionField.setText(df.format(cube.getStartY()));
+					}
+				});
 			}
 		});
 		btnPlusY.setPreferredSize(new Dimension(62, 30));
@@ -229,20 +291,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 
 		btnPlusZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddStartZTask(cube, 0.1F, zPositionField));
-					cube.addStartZ(0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddStartZTask(cube, 1.0F, zPositionField));				
-					cube.addStartZ(1.0F);
-				}
-				zPositionField.setText(df.format(cube.getStartZ()));
+					public void perform()
+					{
+						cube.addStartZ(delta);
+					}
+
+					public void undo()
+					{
+						cube.addStartZ(-delta);				
+					}
+
+					public void update()
+					{
+						zPositionField.setText(df.format(cube.getStartZ()));
+					}
+				});
 			}
 		});
 		btnPlusZ.setPreferredSize(new Dimension(62, 30));
@@ -251,20 +320,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 
 		btnNegX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
+			{				
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddStartXTask(cube, -0.1F, xPositionField));
-					cube.addStartX(-0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddStartXTask(cube, -1.0F, xPositionField));
-					cube.addStartX(-1.0F);
-				}
-				xPositionField.setText(df.format(cube.getStartX()));
+					public void perform()
+					{
+						cube.addStartX(delta);
+					}
+
+					public void undo()
+					{
+						cube.addStartX(-delta);				
+					}
+
+					public void update()
+					{
+						xPositionField.setText(df.format(cube.getStartX()));
+					}
+				});
 			}
 		});
 		btnNegX.setPreferredSize(new Dimension(62, 30));
@@ -273,20 +349,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 
 		btnNegY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
+			{				
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddStartYTask(cube, -0.1F, yPositionField));
-					cube.addStartY(-0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddStartYTask(cube, -1.0F, yPositionField));
-					cube.addStartY(-1.0F);
-				}
-				yPositionField.setText(df.format(cube.getStartY()));
+					public void perform()
+					{
+						cube.addStartY(delta);
+					}
+
+					public void undo()
+					{
+						cube.addStartY(-delta);				
+					}
+
+					public void update()
+					{
+						yPositionField.setText(df.format(cube.getStartY()));
+					}
+				});
 			}
 		});
 		btnNegY.setPreferredSize(new Dimension(62, 30));
@@ -295,20 +378,27 @@ public class PositionPanel extends JPanel implements IValueUpdater
 
 		btnNegZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+				UndoQueue.performPush(new UndoQueue.Task()
 				{
-					UndoQueue.push(new CubeAddStartZTask(cube, -0.1F, zPositionField));
-					cube.addStartZ(-0.1F);
-				}
-				else
-				{
-					UndoQueue.push(new CubeAddStartZTask(cube, -1.0F, zPositionField));
-					cube.addStartZ(-1.0F);
-				}
-				zPositionField.setText(df.format(cube.getStartZ()));
+					public void perform()
+					{
+						cube.addStartZ(delta);
+					}
+					
+					public void undo()
+					{
+						cube.addStartZ(-delta);
+					}
+
+					public void update()
+					{
+						zPositionField.setText(df.format(cube.getStartZ()));
+					}
+				});
 			}
 		});
 		btnNegZ.setPreferredSize(new Dimension(62, 30));

@@ -22,10 +22,6 @@ import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.element.Face;
 import com.mrcrayfish.modelcreator.util.Parser;
 import com.mrcrayfish.modelcreator.util.UndoQueue;
-import com.mrcrayfish.modelcreator.util.undo.UChangeTask;
-import com.mrcrayfish.modelcreator.util.undo.UEndChangeTask;
-import com.mrcrayfish.modelcreator.util.undo.VChangeTask;
-import com.mrcrayfish.modelcreator.util.undo.VEndChangeTask;
 
 public class UVPanel extends JPanel implements IValueUpdater
 {
@@ -78,6 +74,17 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 	public void initProperties()
 	{
+		Runnable trySetStartU = () ->
+		{
+			if (manager.getSelectedElement() != null)
+			{
+				Face face = manager.getSelectedElement().getSelectedFace();
+				face.setStartU(Parser.parseDouble(xStartField.getText(), face.getStartU()));
+				face.updateUV();
+				manager.updateValues();
+			}			
+		};
+		
 		Font defaultFont = new Font("SansSerif", Font.BOLD, 20);
 		xStartField.setSize(new Dimension(62, 30));
 		xStartField.setFont(defaultFont);
@@ -89,14 +96,7 @@ public class UVPanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					if (manager.getSelectedElement() != null)
-					{
-						Face face = manager.getSelectedElement().getSelectedFace();
-						face.setStartU(Parser.parseDouble(xStartField.getText(), face.getStartU()));
-						face.updateUV();
-						manager.updateValues();
-					}
-
+					trySetStartU.run();
 				}
 			}
 		});
@@ -107,14 +107,22 @@ public class UVPanel extends JPanel implements IValueUpdater
 			{
 				if (manager.getSelectedElement() != null)
 				{
-					Face face = manager.getSelectedElement().getSelectedFace();
-					face.setStartU(Parser.parseDouble(xStartField.getText(), face.getStartU()));
-					face.updateUV();
-					manager.updateValues();
+					trySetStartU.run();
 				}
 			}
 		});
 
+		Runnable trySetStartV = () ->
+		{
+			if (manager.getSelectedElement() != null)
+			{
+				Face face = manager.getSelectedElement().getSelectedFace();
+				face.setStartV(Parser.parseDouble(yStartField.getText(), face.getStartV()));
+				face.updateUV();
+				manager.updateValues();
+			}			
+		};
+		
 		yStartField.setSize(new Dimension(62, 30));
 		yStartField.setFont(defaultFont);
 		yStartField.setHorizontalAlignment(JTextField.CENTER);
@@ -125,13 +133,7 @@ public class UVPanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					if (manager.getSelectedElement() != null)
-					{
-						Face face = manager.getSelectedElement().getSelectedFace();
-						face.setStartV(Parser.parseDouble(yStartField.getText(), face.getStartV()));
-						face.updateUV();
-						manager.updateValues();
-					}
+					trySetStartV.run();
 				}
 			}
 		});
@@ -140,15 +142,41 @@ public class UVPanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				if (manager.getSelectedElement() != null)
-				{
-					Face face = manager.getSelectedElement().getSelectedFace();
-					face.setStartV(Parser.parseDouble(yStartField.getText(), face.getStartV()));
-					face.updateUV();
-					manager.updateValues();
-				}
+				trySetStartV.run();
 			}
 		});
+		
+		Runnable trySetEndU = () ->
+		{
+			Element cube = manager.getSelectedElement();			
+			if (cube != null)
+			{
+				Face face = cube.getSelectedFace();				
+				if (face != null)
+				{
+					double oldEndU = face.getEndU();
+					double newEndU = Parser.parseDouble(xEndField.getText(), face.getEndU());
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.setEndU(newEndU);
+						}
+	
+						public void undo()
+						{
+							face.setEndU(oldEndU);
+						}
+	
+						public void update()
+						{
+							face.updateUV();
+							manager.updateValues();
+						}
+					});
+				}
+			}
+		};
 
 		xEndField.setSize(new Dimension(62, 30));
 		xEndField.setFont(defaultFont);
@@ -160,13 +188,7 @@ public class UVPanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					if (manager.getSelectedElement() != null)
-					{
-						Face face = manager.getSelectedElement().getSelectedFace();
-						face.setEndU(Parser.parseDouble(xEndField.getText(), face.getEndU()));
-						face.updateUV();
-						manager.updateValues();
-					}
+					trySetEndU.run();
 				}
 			}
 		});
@@ -175,16 +197,42 @@ public class UVPanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				if (manager.getSelectedElement() != null)
-				{
-					Face face = manager.getSelectedElement().getSelectedFace();
-					face.setEndU(Parser.parseDouble(xEndField.getText(), face.getEndU()));
-					face.updateUV();
-					manager.updateValues();
-				}
+				trySetEndU.run();
 			}
 		});
 
+		Runnable trySetEndV = () ->
+		{
+			Element cube = manager.getSelectedElement();			
+			if (cube != null)
+			{
+				Face face = cube.getSelectedFace();				
+				if (face != null)
+				{
+					double oldEndV = face.getEndV();
+					double newEndV = Parser.parseDouble(yEndField.getText(), face.getEndV());
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.setEndV(newEndV);
+						}
+	
+						public void undo()
+						{
+							face.setEndV(oldEndV);
+						}
+	
+						public void update()
+						{
+							face.updateUV();
+							manager.updateValues();
+						}
+					});
+				}
+			}
+		};
+		
 		yEndField.setSize(new Dimension(62, 30));
 		yEndField.setFont(defaultFont);
 		yEndField.setHorizontalAlignment(JTextField.CENTER);
@@ -195,13 +243,7 @@ public class UVPanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					if (manager.getSelectedElement() != null)
-					{
-						Face face = manager.getSelectedElement().getSelectedFace();
-						face.setEndV(Parser.parseDouble(yEndField.getText(), face.getEndV()));
-						face.updateUV();
-						manager.updateValues();
-					}
+					trySetEndV.run();
 				}
 			}
 		});
@@ -210,34 +252,39 @@ public class UVPanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				if (manager.getSelectedElement() != null)
-				{
-					Face face = manager.getSelectedElement().getSelectedFace();
-					face.setEndV(Parser.parseDouble(yEndField.getText(), face.getEndV()));
-					face.updateUV();
-					manager.updateValues();
-				}
+				trySetEndV.run();
 			}
 		});
 
 		btnPlusX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new UChangeTask(0.1, cube, face, manager));
-					face.addTextureX(0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureX(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureX(-delta);				
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new UChangeTask(1.0, cube, face, manager));
-					face.addTextureX(1.0);
-				}
-				cube.updateUV();
-				manager.updateValues();
 			}
 		});
 
@@ -247,22 +294,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnPlusY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new VChangeTask(0.1, cube, face, manager));
-					face.addTextureY(0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureY(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureY(-delta);				
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new VChangeTask(1.0, cube, face, manager));
-					face.addTextureY(1.0);
-				}
-				cube.updateUV();
-				manager.updateValues();
 			}
 		});
 		btnPlusY.setPreferredSize(new Dimension(62, 30));
@@ -271,22 +329,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnNegX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new UChangeTask(-0.1, cube, face, manager));
-					face.addTextureX(-0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureX(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureX(-delta);				
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new UChangeTask(-1.0, cube, face, manager));
-					face.addTextureX(-1.0);
-				}
-				cube.updateUV();
-				manager.updateValues();
 			}
 		});
 		btnNegX.setSize(new Dimension(62, 30));
@@ -295,22 +364,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnNegY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new VChangeTask(-0.1, cube, face, manager));
-					face.addTextureY(-0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureY(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureY(-delta);				
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new VChangeTask(-1.0, cube, face, manager));
-					face.addTextureY(-1.0);
-				}
-				cube.updateUV();
-				manager.updateValues();
 			}
 		});
 		btnNegY.setSize(new Dimension(62, 30));
@@ -319,22 +399,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnPlusXEnd.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new UEndChangeTask(0.1, cube, face, manager));
-					face.addTextureXEnd(0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureXEnd(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureXEnd(-delta);			
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new UEndChangeTask(1.0, cube, face, manager));
-					face.addTextureXEnd(1.0);
-				}
-				face.setAutoUVEnabled(false);
-				manager.updateValues();
 			}
 		});
 		btnPlusXEnd.setSize(new Dimension(62, 30));
@@ -343,22 +434,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnPlusYEnd.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new VEndChangeTask(0.1, cube, face, manager));
-					face.addTextureYEnd(0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureYEnd(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureYEnd(-delta);			
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new VEndChangeTask(1.0, cube, face, manager));
-					face.addTextureYEnd(1.0);
-				}
-				face.setAutoUVEnabled(false);
-				manager.updateValues();
 			}
 		});
 		btnPlusYEnd.setPreferredSize(new Dimension(62, 30));
@@ -367,22 +469,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnNegXEnd.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new UEndChangeTask(-0.1, cube, face, manager));
-					face.addTextureXEnd(-0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureXEnd(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureXEnd(-delta);
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new UEndChangeTask(-1.0, cube, face, manager));
-					face.addTextureXEnd(-1.0);
-				}
-				face.setAutoUVEnabled(false);
-				manager.updateValues();
 			}
 		});
 		btnNegXEnd.setSize(new Dimension(62, 30));
@@ -391,22 +504,33 @@ public class UVPanel extends JPanel implements IValueUpdater
 
 		btnNegYEnd.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
+			Element cube = manager.getSelectedElement();
+			if (cube != null)
 			{
-				Element cube = manager.getSelectedElement();
 				Face face = cube.getSelectedFace();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
+				if (face != null)
 				{
-					UndoQueue.push(new VEndChangeTask(-0.1, cube, face, manager));
-					face.addTextureYEnd(-0.1);
+					float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+					
+					UndoQueue.performPush(new UndoQueue.Task()
+					{
+						public void perform()
+						{
+							face.addTextureYEnd(delta);
+						}
+
+						public void undo()
+						{
+							face.addTextureYEnd(-delta);
+						}
+
+						public void update()
+						{
+							cube.updateUV();
+							manager.updateValues();
+						}
+					});
 				}
-				else
-				{
-					UndoQueue.push(new VEndChangeTask(-1.0, cube, face, manager));
-					face.addTextureYEnd(-1.0);
-				}
-				face.setAutoUVEnabled(false);
-				manager.updateValues();
 			}
 		});
 		btnNegYEnd.setSize(new Dimension(62, 30));
