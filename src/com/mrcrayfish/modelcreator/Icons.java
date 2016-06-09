@@ -11,6 +11,8 @@ public class Icons
 	public static Icon bin_open;
 	public static Icon remove_rollover;
 	public static Icon new_;
+	public static Icon undo_;
+	public static Icon redo_;
 	public static Icon import_;
 	public static Icon export;
 	public static Icon texture;
@@ -47,6 +49,8 @@ public class Icons
 		add = new ImageIcon(loader.getResource("icons/add.png"));
 		add_rollover = new ImageIcon(loader.getResource("icons/add_rollover.png"));
 		new_ = new ImageIcon(loader.getResource("icons/new.png"));
+		undo_ = new ImageIcon(loader.getResource("icons/undo.png"));
+		redo_ = new ImageIcon(loader.getResource("icons/redo.png"));
 		import_ = new ImageIcon(loader.getResource("icons/import.png"));
 		export = new ImageIcon(loader.getResource("icons/export.png"));
 		texture = new ImageIcon(loader.getResource("icons/texture.png"));

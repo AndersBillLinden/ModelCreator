@@ -2,6 +2,7 @@ package com.mrcrayfish.modelcreator;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
@@ -13,13 +14,19 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.mrcrayfish.modelcreator.screenshot.PendingScreenshot;
 import com.mrcrayfish.modelcreator.screenshot.Screenshot;
 import com.mrcrayfish.modelcreator.screenshot.ScreenshotCallback;
 import com.mrcrayfish.modelcreator.screenshot.Uploader;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
+import com.mrcrayfish.modelcreator.util.UndoQueue.RedoQueueEmptyException;
+import com.mrcrayfish.modelcreator.util.UndoQueue.UndoQueueEmptyException;
 import com.mrcrayfish.modelcreator.util.Util;
 
 public class Menu extends JMenuBar
@@ -37,6 +44,11 @@ public class Menu extends JMenuBar
 	private JMenuItem itemExport;
 	private JMenuItem itemTexturePath;
 	private JMenuItem itemExit;
+
+	/* Edit */
+	private JMenu menuEdit;
+	private JMenuItem itemUndo;
+	private JMenuItem itemRedo;
 
 	/* Options */
 	private JMenu menuOptions;
@@ -77,6 +89,12 @@ public class Menu extends JMenuBar
 			itemExport = createItem("Export JSON...", "Export Model to JSON", KeyEvent.VK_E, new ImageIcon(getClass().getClassLoader().getResource("icons/export.png")));
 			itemTexturePath = createItem("Set Texture Path...", "Set the base path to look for textures", KeyEvent.VK_S, new ImageIcon(getClass().getClassLoader().getResource("icons/texture.png")));
 			itemExit = createItem("Exit", "Exit Application", KeyEvent.VK_E, new ImageIcon(getClass().getClassLoader().getResource("icons/exit.png")));
+		}
+
+		menuEdit = new JMenu("Edit");
+		{
+			itemUndo = createItem("Undo", "Undo", KeyEvent.VK_Z, Icons.undo_);
+			itemRedo = createItem("Redo", "Redo", KeyEvent.VK_Y, Icons.redo_);
 		}
 
 		menuOptions = new JMenu("Options");
@@ -140,7 +158,11 @@ public class Menu extends JMenuBar
 		menuFile.addSeparator();
 		menuFile.add(itemExit);
 
+		menuEdit.add(itemUndo);
+		menuEdit.add(itemRedo);
+
 		add(menuFile);
+		add(menuEdit);
 		add(menuOptions);
 		add(menuScreenshot);
 		add(menuHelp);
@@ -169,7 +191,7 @@ public class Menu extends JMenuBar
 			chooser.setFileFilter(filter);
 
 			String dir = Settings.getModelDir();
-			
+
 			if (dir != null)
 			{
 				chooser.setCurrentDirectory(new File(dir));
@@ -202,7 +224,7 @@ public class Menu extends JMenuBar
 			FileNameExtensionFilter filter = new FileNameExtensionFilter("Model (.model)", "model");
 			chooser.setFileFilter(filter);
 			String dir = Settings.getModelDir();
-			
+
 			if (dir != null)
 			{
 				chooser.setCurrentDirectory(new File(dir));
@@ -228,6 +250,35 @@ public class Menu extends JMenuBar
 			}
 		});
 
+		itemUndo.addActionListener(a ->
+		{
+			try
+			{
+				UndoQueue.Task task = UndoQueue.pop();
+				task.undo();
+				task.update();
+			}
+			catch (UndoQueueEmptyException e)
+			{
+			}
+		});
+
+		itemRedo.addActionListener(a ->
+		{
+			try
+			{
+				UndoQueue.Task nextTask = UndoQueue.next();
+				nextTask.perform();
+				nextTask.update();
+			}
+			catch (RedoQueueEmptyException e)
+			{
+			}
+		});
+
+		itemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+		itemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+
 		itemImport.addActionListener(e ->
 		{
 			JFileChooser chooser = new JFileChooser();
@@ -239,7 +290,7 @@ public class Menu extends JMenuBar
 			chooser.setFileFilter(filter);
 
 			String dir = Settings.getJSONDir();
-			
+
 			if (dir != null)
 			{
 				chooser.setCurrentDirectory(new File(dir));
@@ -275,7 +326,7 @@ public class Menu extends JMenuBar
 			chooser.setFileFilter(filter);
 
 			String dir = Settings.getJSONDir();
-			
+
 			if (dir != null)
 			{
 				chooser.setCurrentDirectory(new File(dir));
@@ -343,7 +394,7 @@ public class Menu extends JMenuBar
 			chooser.setFileFilter(filter);
 
 			String dir = Settings.getScreenshotDir();
-			
+
 			if (dir != null)
 			{
 				chooser.setCurrentDirectory(new File(dir));
@@ -509,6 +560,30 @@ public class Menu extends JMenuBar
 		itemModelChair.addActionListener(a ->
 		{
 			Util.loadModelFromJar(creator.getElementManager(), getClass(), "models/modern_chair");
+		});
+
+		menuEdit.addMenuListener(new MenuListener()
+		{
+			@Override
+			public void menuCanceled(MenuEvent e)
+			{
+				itemUndo.setEnabled(true);
+				itemRedo.setEnabled(true);
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e)
+			{
+				itemUndo.setEnabled(true);
+				itemRedo.setEnabled(true);
+			}
+
+			@Override
+			public void menuSelected(MenuEvent e)
+			{
+				itemUndo.setEnabled(UndoQueue.hasUndoItems());
+				itemRedo.setEnabled(UndoQueue.hasRedoItems());
+			}
 		});
 	}
 
