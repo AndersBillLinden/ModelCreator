@@ -107,11 +107,33 @@ public class SidebarPanel extends JPanel implements ElementManager
 			int selected = list.getSelectedIndex();
 			if (selected != -1)
 			{
-				model.remove(selected);
-				name.setText("");
-				name.setEnabled(false);
-				tabbedPane.updateValues();
-				list.setSelectedIndex(selected);
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					Element element;
+
+					@Override
+					public void perform()
+					{
+						element = list.getSelectedValue();
+						model.remove(selected);
+						name.setText("");
+						name.setEnabled(false);
+					}
+
+					@Override
+					public void undo()
+					{
+						model.insertElementAt(element, selected);
+						name.setText(element.getName());
+					}
+
+					@Override
+					public void update()
+					{
+						list.setSelectedIndex(selected);
+						tabbedPane.updateValues();
+					}
+				});
 			}
 		});
 		btnRemove.setPreferredSize(new Dimension(30, 30));
