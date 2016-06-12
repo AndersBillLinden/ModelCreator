@@ -28,6 +28,7 @@ import com.mrcrayfish.modelcreator.panels.tabs.ElementPanel;
 import com.mrcrayfish.modelcreator.panels.tabs.FacePanel;
 import com.mrcrayfish.modelcreator.panels.tabs.RotationPanel;
 import com.mrcrayfish.modelcreator.texture.PendingTexture;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
 
 public class SidebarPanel extends JPanel implements ElementManager
 {
@@ -71,9 +72,31 @@ public class SidebarPanel extends JPanel implements ElementManager
 		btnAdd.setToolTipText("New Element");
 		btnAdd.addActionListener(e ->
 		{
-			model.addElement(new Element(1, 1, 1));
-			list.setSelectedIndex(model.size() - 1);
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				Element element;
+
+				@Override
+				public void perform()
+				{
+					element = new Element(1, 1, 1);
+					model.addElement(element);
+				}
+
+				@Override
+				public void undo()
+				{
+					model.removeElement(element);
+				}
+
+				@Override
+				public void update()
+				{
+					list.setSelectedIndex(model.size() - 1);
+				}
+			});
 		});
+
 		btnAdd.setPreferredSize(new Dimension(30, 30));
 		btnContainer.add(btnAdd);
 
