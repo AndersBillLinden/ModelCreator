@@ -146,8 +146,31 @@ public class SidebarPanel extends JPanel implements ElementManager
 			int selected = list.getSelectedIndex();
 			if (selected != -1)
 			{
-				model.addElement(new Element(model.getElementAt(selected)));
-				list.setSelectedIndex(model.getSize() - 1);
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					Element element;
+
+					@Override
+					public void perform()
+					{
+						element = new Element(model.getElementAt(selected));
+						model.addElement(element);
+						list.setSelectedIndex(model.getSize() - 1);
+					}
+
+					@Override
+					public void undo()
+					{
+						model.removeElement(element);
+						list.setSelectedIndex(selected);
+					}
+
+					@Override
+					public void update()
+					{
+					}
+				});
+
 			}
 		});
 		btnDuplicate.setFont(defaultFont);
