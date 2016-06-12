@@ -47,8 +47,9 @@ public class Importer
 
 		if (path.exists() && path.isFile())
 		{
-			try(BufferedReader reader = new BufferedReader(new FileReader(path)) {
-			    readComponents(reader, manager, path.getParentFile());
+			try
+			{
+				readComponents(new BufferedReader(new FileReader(path)), manager, path.getParentFile());
 			}
 			catch (IOException e)
 			{
