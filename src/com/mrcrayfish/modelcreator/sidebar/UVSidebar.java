@@ -140,11 +140,8 @@ public class UVSidebar extends Sidebar
 	private int selected = -1;
 	private boolean grabbing = false;
 
-	@Override
 	public void handleInput(int canvasHeight)
 	{
-		super.handleInput(canvasHeight);
-
 		if (Mouse.isButtonDown(0) | Mouse.isButtonDown(1))
 		{
 			if (!grabbing)
@@ -171,8 +168,8 @@ public class UVSidebar extends Sidebar
 				{
 					Face face = manager.getSelectedElement().getAllFaces()[(selected != -1 ? selected : side)];
 
-					int xMovement = (int) ((newMouseX - this.lastMouseX) / 6);
-					int yMovement = (int) ((newMouseY - this.lastMouseY) / 6);
+					int xMovement = (newMouseX - this.lastMouseX) / 6;
+					int yMovement = (newMouseY - this.lastMouseY) / 6;
 
 					if (xMovement != 0 | yMovement != 0)
 					{

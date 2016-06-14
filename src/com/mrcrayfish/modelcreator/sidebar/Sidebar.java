@@ -16,7 +16,7 @@ import org.newdawn.slick.Color;
 
 import com.mrcrayfish.modelcreator.util.FontManager;
 
-public class Sidebar
+public abstract class Sidebar
 {
 	private String title;
 
@@ -48,8 +48,5 @@ public class Sidebar
 		glDisable(GL_BLEND);
 	}
 
-	public void handleInput(int canvasHeight)
-	{
-
-	}
+	public abstract void handleInput(int canvasHeight);
 }
