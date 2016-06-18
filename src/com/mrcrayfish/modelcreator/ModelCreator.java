@@ -226,6 +226,9 @@ public class ModelCreator extends JFrame
 		camera = new Camera(60F, (float) Display.getWidth() / (float) Display.getHeight(), 0.3F, 1000F);
 
 		Dimension newDim;
+		String renderer = GL11.glGetString(GL11.GL_RENDERER);
+
+		this.setTitle("Renderer: " + renderer);
 
 		while (!Display.isCloseRequested() && !getCloseRequested())
 		{
