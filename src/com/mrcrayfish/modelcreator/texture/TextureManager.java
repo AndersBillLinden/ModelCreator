@@ -11,8 +11,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
 
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
@@ -106,6 +108,18 @@ public class TextureManager
 		return true;
 	}
 
+	public static boolean addToCache(ForgeZipFile zipFile, ZipEntry image, Texture texture) throws IOException
+	{
+		if (texture.getImageHeight() % 16 != 0 | texture.getImageWidth() % 16 != 0)
+		{
+			texture.release();
+			return false;
+		}
+		//ImageIcon icon = upscale(new ImageIcon(image.getAbsolutePath()), 256);
+		textureCache.add(new TextureEntry(image.getName().replace(".png", "").replaceAll("\\d*$", ""), texture));
+		return true;
+	}
+	
 	public static ImageIcon upscale(ImageIcon source, int length)
 	{
 		Image img = source.getImage();
@@ -249,7 +263,7 @@ public class TextureManager
 				{
 					File meta = new File(chooser.getSelectedFile().getAbsolutePath() + ".mcmeta");
 					System.out.println(meta.getName());
-					manager.addPendingTexture(new PendingTexture(chooser.getSelectedFile(), meta, new TextureCallback()
+					manager.addPendingTexture(new PendingFileTexture(chooser.getSelectedFile(), meta, new TextureCallback()
 					{
 						@Override
 						public void callback(boolean success, String texture)

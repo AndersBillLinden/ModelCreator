@@ -27,7 +27,7 @@ import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.panels.tabs.ElementPanel;
 import com.mrcrayfish.modelcreator.panels.tabs.FacePanel;
 import com.mrcrayfish.modelcreator.panels.tabs.RotationPanel;
-import com.mrcrayfish.modelcreator.texture.PendingTexture;
+import com.mrcrayfish.modelcreator.texture.IPendingTexture;
 
 public class SidebarPanel extends JPanel implements ElementManager
 {
@@ -242,7 +242,7 @@ public class SidebarPanel extends JPanel implements ElementManager
 	}
 
 	@Override
-	public void addPendingTexture(PendingTexture texture)
+	public void addPendingTexture(IPendingTexture texture)
 	{
 		creator.pendingTextures.add(texture);
 	}

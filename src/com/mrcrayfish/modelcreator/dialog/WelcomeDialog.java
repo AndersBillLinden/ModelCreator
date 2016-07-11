@@ -141,5 +141,4 @@ public class WelcomeDialog
 		dialog.setVisible(true);
 		dialog.requestFocusInWindow();
 	}
-
 }

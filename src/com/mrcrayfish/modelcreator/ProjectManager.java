@@ -14,7 +14,7 @@ import java.util.zip.ZipOutputStream;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.element.Face;
-import com.mrcrayfish.modelcreator.texture.PendingTexture;
+import com.mrcrayfish.modelcreator.texture.PendingFileTexture;
 import com.mrcrayfish.modelcreator.texture.TextureManager;
 
 public class ProjectManager
@@ -31,7 +31,7 @@ public class ProjectManager
 
 		for (ProjectTexture texture : project.getTextures())
 		{
-			manager.addPendingTexture(new PendingTexture(texture.getTexture(), texture.getMeta()));
+			manager.addPendingTexture(new PendingFileTexture(texture.getTexture(), texture.getMeta()));
 		}
 	}
 

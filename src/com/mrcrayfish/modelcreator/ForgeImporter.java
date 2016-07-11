@@ -2,11 +2,14 @@ package com.mrcrayfish.modelcreator;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -15,25 +18,24 @@ import com.google.gson.JsonParser;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.element.Face;
-import com.mrcrayfish.modelcreator.texture.PendingFileTexture;
+import com.mrcrayfish.modelcreator.texture.PendingZipFileTexture;
+import com.mrcrayfish.modelcreator.util.components.ImportedModel;
 
-public class Importer
+public class ForgeImporter
 {
 	private Map<String, String> textureMap = new HashMap<String, String>();
 	private String[] faceNames = { "north", "east", "south", "west", "up", "down" };
-
-	// Input File
-	private String inputPath;
 
 	// Model Variables
 	private ElementManager manager;
 
 	private boolean ignoreTextures = false;
+	private ImportedModel model;
 
-	public Importer(ElementManager manager, String outputPath)
+	public ForgeImporter(ElementManager manager, ImportedModel model)
 	{
 		this.manager = manager;
-		this.inputPath = outputPath;
+		this.model = model;
 	}
 
 	public void ignoreTextureLoading()
@@ -43,66 +45,29 @@ public class Importer
 
 	public void importFromJSON()
 	{
-		File path = new File(inputPath);
-
-		if (path.exists() && path.isFile())
+		manager.clearElements();
+		
+		try
 		{
-			FileReader fr;
-			BufferedReader reader;
-			try
-			{
-				fr = new FileReader(path);
-				reader = new BufferedReader(fr);
-				readComponents(reader, manager, path.getParentFile());
-				reader.close();
-				fr.close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			InputStream stream = model.getFile().getInputStream(model.getEntry());
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+			readComponents(reader, manager);
+			reader.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 
-	private void readComponents(BufferedReader reader, ElementManager manager, File dir) throws IOException
+	private void readComponents(BufferedReader reader, ElementManager manager) throws IOException
 	{
-		manager.clearElements();
-
 		JsonParser parser = new JsonParser();
 		JsonElement read = parser.parse(reader);
 
 		if (read.isJsonObject())
 		{
 			JsonObject obj = read.getAsJsonObject();
-
-			if (obj.has("parent") && obj.get("parent").isJsonPrimitive())
-			{
-				String parent = obj.get("parent").getAsString();
-				File file = new File(dir, parent + ".json");
-				if (!file.exists())
-				{
-					parent = parent.substring(parent.lastIndexOf('/') + 1, parent.length());
-					file = new File(dir, parent + ".json");
-				}
-
-				if (file.exists())
-				{
-					// load textures
-					loadTextures(dir, obj);
-
-					// Load Parent
-					FileReader fr = new FileReader(file);
-					reader = new BufferedReader(fr);
-					readComponents(reader, manager, file.getParentFile());
-					reader.close();
-					fr.close();
-				}
-
-				return;
-			}
-
-			// load textures
-			loadTextures(dir, obj);
 
 			// load elements
 			if (obj.has("elements") && obj.get("elements").isJsonArray())
@@ -123,10 +88,24 @@ public class Importer
 			{
 				manager.setAmbientOcc(obj.get("ambientocclusion").getAsBoolean());
 			}
+			
+			loadTextures(obj);
+						
+			if (obj.has("parent") && obj.get("parent").isJsonPrimitive())
+			{
+				String parent = obj.get("parent").getAsString();
+				
+				ZipEntry parentEntry = new ZipEntry("assets/minecraft/models/" + parent + ".json");
+
+				// Load Parent
+				InputStream parentStream = model.getFile().getInputStream(parentEntry);
+				BufferedReader parentReader = new BufferedReader(new InputStreamReader(parentStream, "UTF-8"));
+				readComponents(parentReader, manager);
+			}			
 		}
 	}
 
-	private void loadTextures(File file, JsonObject obj)
+	private void loadTextures(JsonObject obj)
 	{
 		if (obj.has("textures") && obj.get("textures").isJsonObject())
 		{
@@ -153,38 +132,29 @@ public class Importer
 							textureMap.put(entry.getKey().replace("#", ""), texture);
 						}
 					}
-					loadTexture(file, texture);
+					manager.addPendingTexture(new PendingZipFileTexture(model.getFile(), texture, textureMap));
 				}
 			}
 		}
 	}
 
-	private void loadTexture(File dir, String texture)
+	public static ArrayList<String> GetAvailableMinecraftVersions()
 	{
-		File assets = dir.getParentFile().getParentFile();
-		System.out.println("1." + assets.getAbsolutePath());
-		if (assets != null)
+		ArrayList<String> result = new ArrayList<String>();
+
+		File homeDir = new File(System.getProperty("user.home"));
+		File dir = new File(homeDir, ".gradle/caches/minecraft/net/minecraft/minecraft");
+
+		File[] files = dir.listFiles();
+
+		for (File file : files)
 		{
-			File textureDir = new File(assets, "textures/");
-			System.out.println("3." + textureDir.getAbsolutePath());
-			if (textureDir.exists() && textureDir.isDirectory())
-			{
-				File textureFile = new File(textureDir, texture + ".png");
-				System.out.println("4." + textureFile.getAbsolutePath());
-				if (textureFile.exists() && textureFile.isFile())
-				{
-					manager.addPendingTexture(new PendingFileTexture(textureFile));
-					return;
-				}
-			}
+			result.add(file.getName());
 		}
 
-		if (new File(ModelCreator.texturePath + File.separator + texture + ".png").exists())
-		{
-			manager.addPendingTexture(new PendingFileTexture(new File(ModelCreator.texturePath + File.separator + texture + ".png")));
-		}
+		return result;
 	}
-
+		
 	private void readElement(JsonObject obj, ElementManager manager)
 	{
 		String name = "Element";

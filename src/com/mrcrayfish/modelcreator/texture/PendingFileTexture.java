@@ -7,29 +7,29 @@ import java.io.IOException;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
-public class PendingTexture
+public class PendingFileTexture implements IPendingTexture
 {
 	private File texture;
 	private File meta;
 	private TextureCallback callback;
 
-	public PendingTexture(File texture)
+	public PendingFileTexture(File texture)
 	{
 		this(texture, (TextureCallback) null);
 	}
 
-	public PendingTexture(File texture, File meta)
+	public PendingFileTexture(File texture, File meta)
 	{
 		this(texture, meta, null);
 	}
 
-	public PendingTexture(File texture, TextureCallback callback)
+	public PendingFileTexture(File texture, TextureCallback callback)
 	{
 		this.texture = texture;
 		this.callback = callback;
 	}
 
-	public PendingTexture(File texture, File meta, TextureCallback callback)
+	public PendingFileTexture(File texture, File meta, TextureCallback callback)
 	{
 		this.texture = texture;
 		this.meta = meta;

@@ -59,7 +59,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.Color;
 
-import com.mrcrayfish.modelcreator.dialog.WelcomeDialog;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.panels.SidebarPanel;
@@ -67,7 +66,8 @@ import com.mrcrayfish.modelcreator.screenshot.PendingScreenshot;
 import com.mrcrayfish.modelcreator.screenshot.Screenshot;
 import com.mrcrayfish.modelcreator.sidebar.Sidebar;
 import com.mrcrayfish.modelcreator.sidebar.UVSidebar;
-import com.mrcrayfish.modelcreator.texture.PendingTexture;
+import com.mrcrayfish.modelcreator.texture.IPendingTexture;
+import com.mrcrayfish.modelcreator.texture.PendingFileTexture;
 import com.mrcrayfish.modelcreator.util.FontManager;
 
 public class ModelCreator extends JFrame
@@ -90,7 +90,7 @@ public class ModelCreator extends JFrame
 	private Element grabbed = null;
 
 	// Texture Loading Cache
-	public List<PendingTexture> pendingTextures = new ArrayList<PendingTexture>();
+	public List<IPendingTexture> pendingTextures = new ArrayList<IPendingTexture>();
 	private PendingScreenshot screenshot = null;
 
 	private int lastMouseX, lastMouseY;
@@ -156,8 +156,6 @@ public class ModelCreator extends JFrame
 		try
 		{
 			Display.create();
-
-			WelcomeDialog.show(ModelCreator.this);
 
 			loop();
 
@@ -229,7 +227,7 @@ public class ModelCreator extends JFrame
 
 		while (!Display.isCloseRequested() && !getCloseRequested())
 		{
-			for (PendingTexture texture : pendingTextures)
+			for (IPendingTexture texture : pendingTextures)
 			{
 				texture.load();
 			}
@@ -446,8 +444,8 @@ public class ModelCreator extends JFrame
 					int newMouseX = Mouse.getX();
 					int newMouseY = Mouse.getY();
 
-					int xMovement = (int) ((newMouseX - lastMouseX) / 20);
-					int yMovement = (int) ((newMouseY - lastMouseY) / 20);
+					int xMovement = (newMouseX - lastMouseX) / 20;
+					int yMovement = (newMouseY - lastMouseY) / 20;
 
 					if (xMovement != 0 | yMovement != 0)
 					{
@@ -547,15 +545,15 @@ public class ModelCreator extends JFrame
 				if (Mouse.isButtonDown(0))
 				{
 					final float modifier = (cameraMod * 0.05f);
-					camera.addX((float) (Mouse.getDX() * 0.01F) * modifier);
-					camera.addY((float) (Mouse.getDY() * 0.01F) * modifier);
+					camera.addX(Mouse.getDX() * 0.01F * modifier);
+					camera.addY(Mouse.getDY() * 0.01F * modifier);
 				}
 				else if (Mouse.isButtonDown(1))
 				{
 					final float modifier = applyLimit(cameraMod * 0.1f);
-					camera.rotateX(-(float) (Mouse.getDY() * 0.5F) * modifier);
+					camera.rotateX(-(Mouse.getDY() * 0.5F) * modifier);
 					final float rxAbs = Math.abs(camera.getRX());
-					camera.rotateY((rxAbs >= 90 && rxAbs < 270 ? -1 : 1) * (float) (Mouse.getDX() * 0.5F) * modifier);
+					camera.rotateY((rxAbs >= 90 && rxAbs < 270 ? -1 : 1) * (Mouse.getDX() * 0.5F) * modifier);
 				}
 
 				final float wheel = Mouse.getDWheel();

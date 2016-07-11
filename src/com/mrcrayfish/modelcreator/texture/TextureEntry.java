@@ -52,6 +52,12 @@ public class TextureEntry
 		this.metaLocation = metaLocation;
 	}
 
+	public TextureEntry(String name, Texture texture)
+	{
+		this.name = name;
+		this.textures = Arrays.asList(texture);
+	}
+
 	public String getName()
 	{
 		return name;

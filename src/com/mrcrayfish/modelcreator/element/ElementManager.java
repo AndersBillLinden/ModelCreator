@@ -2,7 +2,7 @@ package com.mrcrayfish.modelcreator.element;
 
 import java.util.List;
 
-import com.mrcrayfish.modelcreator.texture.PendingTexture;
+import com.mrcrayfish.modelcreator.texture.IPendingTexture;
 
 public interface ElementManager
 {
@@ -22,7 +22,7 @@ public interface ElementManager
 
 	public void updateValues();
 
-	public void addPendingTexture(PendingTexture texture);
+	public void addPendingTexture(IPendingTexture texture);
 
 	public boolean getAmbientOcc();
 

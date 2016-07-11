@@ -8,6 +8,7 @@ import java.io.File;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -15,6 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.mrcrayfish.modelcreator.dialog.ImportFromMinecraftDialog;
 import com.mrcrayfish.modelcreator.screenshot.PendingScreenshot;
 import com.mrcrayfish.modelcreator.screenshot.Screenshot;
 import com.mrcrayfish.modelcreator.screenshot.ScreenshotCallback;
@@ -34,6 +36,7 @@ public class Menu extends JMenuBar
 	private JMenuItem itemSave;
 	private JMenuItem itemImport;
 	private JMenuItem itemExport;
+	private JMenuItem itemImportFromMinecraft;
 	private JMenuItem itemTexturePath;
 	private JMenuItem itemExit;
 
@@ -74,6 +77,7 @@ public class Menu extends JMenuBar
 			itemSave = createItem("Save Project...", "Save Project to File", KeyEvent.VK_S, Icons.disk);
 			itemImport = createItem("Import JSON...", "Import Model from JSON", KeyEvent.VK_I, Icons.import_);
 			itemExport = createItem("Export JSON...", "Export Model to JSON", KeyEvent.VK_E, Icons.export);
+			itemImportFromMinecraft = createItem("Import from Minecraft...", "Import Model from Minecraft", 0, Icons.import_);
 			itemTexturePath = createItem("Set Texture Path...", "Set the base path to look for textures", KeyEvent.VK_S, Icons.texture);
 			itemExit = createItem("Exit", "Exit Application", KeyEvent.VK_E, Icons.exit);
 		}
@@ -134,6 +138,8 @@ public class Menu extends JMenuBar
 		menuFile.addSeparator();
 		menuFile.add(itemImport);
 		menuFile.add(itemExport);
+		menuFile.addSeparator();
+		menuFile.add(itemImportFromMinecraft);
 		menuFile.addSeparator();
 		menuFile.add(itemTexturePath);
 		menuFile.addSeparator();
@@ -299,6 +305,16 @@ public class Menu extends JMenuBar
 					exporter.export(chooser.getSelectedFile());
 				}
 			}
+		});
+
+		itemImportFromMinecraft.addActionListener(e ->
+		{
+			ImportFromMinecraftDialog.show((JFrame) SwingUtilities.windowForComponent(this), model ->
+			{
+				ForgeImporter importer = new ForgeImporter(creator.getElementManager(), model);
+				importer.importFromJSON();
+				creator.getElementManager().updateValues();
+			});
 		});
 
 		itemTexturePath.addActionListener(e ->
