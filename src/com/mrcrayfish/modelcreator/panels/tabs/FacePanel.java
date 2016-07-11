@@ -159,9 +159,11 @@ public class FacePanel extends JPanel implements IValueUpdater
 	@Override
 	public void updateValues(Element cube)
 	{
+		System.out.println("updatevalues");
 		if (cube != null)
 		{
-			menuList.setSelectedIndex(cube.getSelectedFaceIndex());
+			int selectedIndex = cube.getSelectedFaceIndex();
+			System.out.println("Selected face index: " + selectedIndex);
 			modidField.setEnabled(true);
 			modidField.setText(cube.getSelectedFace().getTextureLocation());
 			rotation.setEnabled(true);
@@ -176,5 +178,16 @@ public class FacePanel extends JPanel implements IValueUpdater
 		}
 		panelUV.updateValues(cube);
 		panelProperties.updateValues(cube);
+	}
+
+	public void setSelectedFace(int i)
+	{
+		Element element;
+		if ((element = manager.getSelectedElement()) != null)
+		{
+			System.out.println("setting face of cube: " + i);
+			menuList.setSelectedIndex(i);
+			updateValues(element);
+		}
 	}
 }

@@ -46,6 +46,7 @@ public class SidebarPanel extends JPanel implements ElementManager
 	private JButton btnDuplicate = new JButton();
 	private JTextField name = new JTextField();
 	private CuboidTabbedPane tabbedPane = new CuboidTabbedPane(this);
+	private FacePanel facePanel;
 
 	private String particle = null;
 	private String particleLocation = null;
@@ -149,12 +150,11 @@ public class SidebarPanel extends JPanel implements ElementManager
 		scrollPane = new JScrollPane(list);
 		scrollPane.setPreferredSize(new Dimension(190, 170));
 		add(scrollPane);
-
 		tabbedPane.setBackground(new Color(127, 132, 145));
 		tabbedPane.setForeground(Color.WHITE);
 		tabbedPane.add("Element", new ElementPanel(this));
 		tabbedPane.add("Rotation", new RotationPanel(this));
-		tabbedPane.add("Faces", new FacePanel(this));
+		tabbedPane.add("Faces", facePanel = new FacePanel(this));
 		tabbedPane.setPreferredSize(new Dimension(190, 500));
 		tabbedPane.setTabPlacement(JTabbedPane.TOP);
 		tabbedPane.addChangeListener(c ->
@@ -183,7 +183,7 @@ public class SidebarPanel extends JPanel implements ElementManager
 	{
 		int i = list.getSelectedIndex();
 		if (i != -1)
-			return (Element) model.getElementAt(i);
+			return model.getElementAt(i);
 		return null;
 	}
 
@@ -294,5 +294,11 @@ public class SidebarPanel extends JPanel implements ElementManager
 		clearElements();
 		ambientOcc = true;
 		particle = null;
+	}
+
+	@Override
+	public void setSelectedFace(int i)
+	{
+		facePanel.setSelectedFace(i);
 	}
 }

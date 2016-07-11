@@ -18,6 +18,8 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2d;
 import static org.lwjgl.opengl.GL11.glVertex2i;
 
+import java.util.Date;
+
 import org.lwjgl.input.Mouse;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.opengl.TextureImpl;
@@ -37,10 +39,13 @@ public class UVSidebar extends Sidebar
 	private int[] startX = { 0, 0, 0, 0, 0, 0 };
 	private int[] startY = { 0, 0, 0, 0, 0, 0 };
 
-	public UVSidebar(String title, ElementManager manager)
+	private FaceClickedListener clickListener;
+
+	public UVSidebar(String title, ElementManager manager, FaceClickedListener clickListener)
 	{
 		super(title);
 		this.manager = manager;
+		this.clickListener = clickListener;
 	}
 
 	@Override
@@ -139,7 +144,9 @@ public class UVSidebar extends Sidebar
 	private int lastMouseX, lastMouseY;
 	private int selected = -1;
 	private boolean grabbing = false;
+	private long mouseDownTime;
 
+	@Override
 	public void handleInput(int canvasHeight)
 	{
 		if (Mouse.isButtonDown(0) | Mouse.isButtonDown(1))
@@ -148,12 +155,29 @@ public class UVSidebar extends Sidebar
 			{
 				this.lastMouseX = Mouse.getX();
 				this.lastMouseY = Mouse.getY();
+				mouseDownTime = new Date().getTime();
 				grabbing = true;
 			}
 		}
 		else
 		{
-			grabbing = false;
+			if (grabbing)
+			{
+				grabbing = false;
+
+				this.lastMouseX = Mouse.getX();
+				this.lastMouseY = Mouse.getY();
+
+				int side = getFace(canvasHeight, this.lastMouseX, this.lastMouseY);
+				System.out.println(side);
+				if (side >= 0)
+				{
+					if (new Date().getTime() - mouseDownTime < 400)
+					{
+						clickListener.onclick(side);
+					}
+				}
+			}
 		}
 
 		if (grabbing)
@@ -221,5 +245,10 @@ public class UVSidebar extends Sidebar
 			}
 		}
 		return -1;
+	}
+
+	public static interface FaceClickedListener
+	{
+		void onclick(int face);
 	}
 }

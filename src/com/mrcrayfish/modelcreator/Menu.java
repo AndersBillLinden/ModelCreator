@@ -135,6 +135,7 @@ public class Menu extends JMenuBar
 		menuFile.add(itemImport);
 		menuFile.add(itemExport);
 		menuFile.addSeparator();
+		menuFile.addSeparator();
 		menuFile.add(itemTexturePath);
 		menuFile.addSeparator();
 		menuFile.add(itemExit);
