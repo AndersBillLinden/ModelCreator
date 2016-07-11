@@ -33,9 +33,12 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.KeyEventPostProcessor;
+import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.ByteBuffer;
@@ -69,6 +72,9 @@ import com.mrcrayfish.modelcreator.sidebar.Sidebar;
 import com.mrcrayfish.modelcreator.sidebar.UVSidebar;
 import com.mrcrayfish.modelcreator.texture.PendingTexture;
 import com.mrcrayfish.modelcreator.util.FontManager;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
+import com.mrcrayfish.modelcreator.util.UndoQueue.RedoQueueEmptyException;
+import com.mrcrayfish.modelcreator.util.UndoQueue.UndoQueueEmptyException;
 
 public class ModelCreator extends JFrame
 {
@@ -145,8 +151,8 @@ public class ModelCreator extends JFrame
 			}
 		});
 
-		manager.updateValues();
 
+		manager.updateValues();
 		pack();
 		setVisible(true);
 		setLocationRelativeTo(null);

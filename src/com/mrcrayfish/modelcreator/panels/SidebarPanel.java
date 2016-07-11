@@ -93,6 +93,9 @@ public class SidebarPanel extends JPanel implements ElementManager
 				public void update()
 				{
 					list.setSelectedIndex(model.size() - 1);
+					Element c = list.getSelectedValue();
+					if (c != null)
+						name.setText(c.getName());
 				}
 			});
 		});
@@ -104,8 +107,8 @@ public class SidebarPanel extends JPanel implements ElementManager
 		btnRemove.setToolTipText("Remove Element");
 		btnRemove.addActionListener(e ->
 		{
-			int selected = list.getSelectedIndex();
-			if (selected != -1)
+			int index = list.getSelectedIndex();
+			if (index != -1)
 			{
 				UndoQueue.performPush(new UndoQueue.Task()
 				{
@@ -188,7 +191,15 @@ public class SidebarPanel extends JPanel implements ElementManager
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					updateName();
+					Element cube = getSelectedElement();
+					if (cube != null)
+					{
+						String newName = name.getText();
+						if (newName.isEmpty())
+							name.setText("Cube");
+						
+						updateName();
+					}
 				}
 			}
 		});
@@ -251,7 +262,7 @@ public class SidebarPanel extends JPanel implements ElementManager
 	{
 		int i = list.getSelectedIndex();
 		if (i != -1)
-			return (Element) model.getElementAt(i);
+			return model.getElementAt(i);
 		return null;
 	}
 
@@ -291,15 +302,38 @@ public class SidebarPanel extends JPanel implements ElementManager
 	@Override
 	public void updateName()
 	{
-		String newName = name.getText();
-		if (newName.isEmpty())
-			newName = "Cuboid";
 		Element cube = getSelectedElement();
 		if (cube != null)
 		{
-			cube.setName(newName);
-			name.setText(newName);
-			list.updateUI();
+			String nameString = name.getText();
+			String newName = !nameString.isEmpty() ? nameString : "Cube";
+			String oldName = cube.getName();
+
+			if (!newName.equals(oldName))
+			{
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					@Override
+					public void perform()
+					{
+						cube.setName(newName);
+						name.setText(newName);
+					}
+
+					@Override
+					public void undo()
+					{
+						cube.setName(oldName);
+						name.setText(oldName);
+					}
+
+					@Override
+					public void update()
+					{
+						list.updateUI();
+					}
+				});
+			}
 		}
 	}
 

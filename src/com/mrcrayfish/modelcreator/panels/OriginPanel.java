@@ -20,6 +20,7 @@ import com.mrcrayfish.modelcreator.Icons;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.util.Parser;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
 
 public class OriginPanel extends JPanel implements IValueUpdater
 {
@@ -63,6 +64,186 @@ public class OriginPanel extends JPanel implements IValueUpdater
 		btnNegZ = new JButton(Icons.arrow_down);
 	}
 
+	private void trySetOriginX()
+	{
+		Element element = manager.getSelectedElement();
+		if (element != null)
+		{
+			double oldOriginX = element.getOriginX();
+			double newOriginX = (Parser.parseDouble(xOriginField.getText(), oldOriginX));
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					element.setOriginX(newOriginX);
+				}
+
+				@Override
+				public void undo()
+				{
+					element.setOriginX(oldOriginX);
+				}
+
+				@Override
+				public void update()
+				{
+					xOriginField.setText(df.format(element.getOriginZ()));
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void trySetOriginY()
+	{
+		Element element = manager.getSelectedElement();
+		if (element != null)
+		{
+			double oldOriginY = element.getOriginY();
+			double newOriginY = (Parser.parseDouble(yOriginField.getText(), oldOriginY));
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					element.setOriginX(newOriginY);
+				}
+
+				@Override
+				public void undo()
+				{
+					element.setOriginX(oldOriginY);
+				}
+
+				@Override
+				public void update()
+				{
+					yOriginField.setText(df.format(element.getOriginY()));
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void trySetOriginZ()
+	{
+		Element element = manager.getSelectedElement();
+		if (element != null)
+		{
+			double oldOriginZ = element.getOriginZ();
+			double newOriginZ = (Parser.parseDouble(zOriginField.getText(), oldOriginZ));
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					element.setOriginZ(newOriginZ);
+				}
+
+				@Override
+				public void undo()
+				{
+					element.setOriginZ(oldOriginZ);
+				}
+
+				@Override
+				public void update()
+				{
+					zOriginField.setText(df.format(element.getOriginZ()));
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void tryAddOriginX(float delta)
+	{
+		Element cube = manager.getSelectedElement();
+		if (cube != null)
+		{
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					cube.addOriginX(delta);
+				}
+
+				@Override
+				public void undo()
+				{
+					cube.addOriginX(-delta);
+				}
+
+				@Override
+				public void update()
+				{
+					xOriginField.setText(df.format(cube.getOriginX()));
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void tryAddOriginY(float delta)
+	{
+		Element cube = manager.getSelectedElement();
+		if (cube != null)
+		{
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					cube.addOriginY(delta);
+				}
+
+				@Override
+				public void undo()
+				{
+					cube.addOriginY(-delta);
+				}
+
+				@Override
+				public void update()
+				{
+					yOriginField.setText(df.format(cube.getOriginY()));
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void tryAddOriginZ(float delta)
+	{
+		Element cube = manager.getSelectedElement();
+		if (cube != null)
+		{
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					cube.addOriginZ(delta);
+				}
+
+				@Override
+				public void undo()
+				{
+					cube.addOriginZ(-delta);
+				}
+
+				@Override
+				public void update()
+				{
+					zOriginField.setText(df.format(cube.getOriginZ()));
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
 	public void initProperties()
 	{
 		Font defaultFont = new Font("SansSerif", Font.BOLD, 20);
@@ -76,12 +257,7 @@ public class OriginPanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setOriginX((Parser.parseDouble(xOriginField.getText(), element.getOriginX())));
-						manager.updateValues();
-					}
+					trySetOriginX();
 				}
 			}
 		});
@@ -90,12 +266,7 @@ public class OriginPanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setOriginX((Parser.parseDouble(xOriginField.getText(), element.getOriginX())));
-					manager.updateValues();
-				}
+				trySetOriginX();
 			}
 		});
 
@@ -107,15 +278,7 @@ public class OriginPanel extends JPanel implements IValueUpdater
 			@Override
 			public void keyPressed(KeyEvent e)
 			{
-				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setOriginY((Parser.parseDouble(yOriginField.getText(), element.getOriginY())));
-						manager.updateValues();
-					}
-				}
+				trySetOriginY();
 			}
 		});
 		yOriginField.addFocusListener(new FocusAdapter()
@@ -123,12 +286,7 @@ public class OriginPanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setOriginY((Parser.parseDouble(yOriginField.getText(), element.getOriginY())));
-					manager.updateValues();
-				}
+				trySetOriginY();
 			}
 		});
 
@@ -140,15 +298,7 @@ public class OriginPanel extends JPanel implements IValueUpdater
 			@Override
 			public void keyPressed(KeyEvent e)
 			{
-				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setOriginZ((Parser.parseDouble(zOriginField.getText(), element.getOriginZ())));
-						manager.updateValues();
-					}
-				}
+				trySetOriginZ();
 			}
 		});
 		zOriginField.addFocusListener(new FocusAdapter()
@@ -156,30 +306,14 @@ public class OriginPanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setOriginZ((Parser.parseDouble(zOriginField.getText(), element.getOriginZ())));
-					manager.updateValues();
-				}
+				trySetOriginZ();
 			}
 		});
 
 		btnPlusX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addOriginX(0.1F);
-				}
-				else
-				{
-					cube.addOriginX(1.0F);
-				}
-				xOriginField.setText(df.format(cube.getOriginX()));
-			}
+			float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+			tryAddOriginX(delta);
 		});
 		btnPlusX.setPreferredSize(new Dimension(62, 30));
 		btnPlusX.setFont(defaultFont);
@@ -187,19 +321,8 @@ public class OriginPanel extends JPanel implements IValueUpdater
 
 		btnPlusY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addOriginY(0.1F);
-				}
-				else
-				{
-					cube.addOriginY(1.0F);
-				}
-				yOriginField.setText(df.format(cube.getOriginY()));
-			}
+			float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+			tryAddOriginY(delta);
 		});
 		btnPlusY.setPreferredSize(new Dimension(62, 30));
 		btnPlusY.setFont(defaultFont);
@@ -207,19 +330,8 @@ public class OriginPanel extends JPanel implements IValueUpdater
 
 		btnPlusZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addOriginZ(0.1F);
-				}
-				else
-				{
-					cube.addOriginZ(1.0F);
-				}
-				zOriginField.setText(df.format(cube.getOriginZ()));
-			}
+			float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? 1.0F : 0.1F;
+			tryAddOriginZ(delta);
 		});
 		btnPlusZ.setPreferredSize(new Dimension(62, 30));
 		btnPlusZ.setFont(defaultFont);
@@ -227,19 +339,8 @@ public class OriginPanel extends JPanel implements IValueUpdater
 
 		btnNegX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addOriginX(-0.1F);
-				}
-				else
-				{
-					cube.addOriginX(-1.0F);
-				}
-				xOriginField.setText(df.format(cube.getOriginX()));
-			}
+			float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+			tryAddOriginX(delta);
 		});
 		btnNegX.setPreferredSize(new Dimension(62, 30));
 		btnNegX.setFont(defaultFont);
@@ -247,19 +348,8 @@ public class OriginPanel extends JPanel implements IValueUpdater
 
 		btnNegY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addOriginY(-0.1F);
-				}
-				else
-				{
-					cube.addOriginY(-1.0F);
-				}
-				yOriginField.setText(df.format(cube.getOriginY()));
-			}
+			float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+			tryAddOriginY(delta);
 		});
 		btnNegY.setPreferredSize(new Dimension(62, 30));
 		btnNegY.setFont(defaultFont);
@@ -267,19 +357,8 @@ public class OriginPanel extends JPanel implements IValueUpdater
 
 		btnNegZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addOriginZ(-0.1F);
-				}
-				else
-				{
-					cube.addOriginZ(-1.0F);
-				}
-				zOriginField.setText(df.format(cube.getOriginZ()));
-			}
+			float delta = ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0) ? -1.0F : -0.1F;
+			tryAddOriginZ(delta);
 		});
 		btnNegZ.setPreferredSize(new Dimension(62, 30));
 		btnNegZ.setFont(defaultFont);

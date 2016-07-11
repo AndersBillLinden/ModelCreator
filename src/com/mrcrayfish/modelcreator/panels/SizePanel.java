@@ -20,6 +20,7 @@ import com.mrcrayfish.modelcreator.Icons;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.util.Parser;
+import com.mrcrayfish.modelcreator.util.UndoQueue;
 
 public class SizePanel extends JPanel implements IValueUpdater
 {
@@ -63,8 +64,221 @@ public class SizePanel extends JPanel implements IValueUpdater
 		btnNegZ = new JButton(Icons.arrow_down);
 	}
 
+	private void trySetWidth()
+	{
+		Element element = manager.getSelectedElement();
+		if (element != null)
+		{
+			double oldWidth = element.getWidth();
+			double newWidth = Parser.parseDouble(xSizeField.getText(), element.getWidth());
+
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					element.setWidth(newWidth);
+				}
+
+				@Override
+				public void undo()
+				{
+					element.setWidth(oldWidth);
+				}
+
+				@Override
+				public void update()
+				{
+					element.updateUV();
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void trySetHeight()
+	{
+		Element element = manager.getSelectedElement();
+		if (element != null)
+		{
+			double oldHeight = element.getHeight();
+			double newHeight = Parser.parseDouble(ySizeField.getText(), element.getHeight());
+
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					element.setHeight(newHeight);
+				}
+
+				@Override
+				public void undo()
+				{
+					element.setHeight(oldHeight);
+				}
+
+				@Override
+				public void update()
+				{
+					element.updateUV();
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void trySetDepth()
+	{
+		Element element = manager.getSelectedElement();
+		if (element != null)
+		{
+			double oldDepth = element.getDepth();
+			double newDepth = Parser.parseDouble(zSizeField.getText(), element.getDepth());
+
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					element.setDepth(newDepth);
+				}
+
+				@Override
+				public void undo()
+				{
+					element.setDepth(oldDepth);
+				}
+
+				@Override
+				public void update()
+				{
+					element.updateUV();
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void tryAddToWidth(float delta)
+	{
+		Element cube = manager.getSelectedElement();
+		if (cube != null)
+		{
+
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					cube.addWidth(delta);
+				}
+
+				@Override
+				public void undo()
+				{
+					cube.addWidth(-delta);
+				}
+
+				@Override
+				public void update()
+				{
+					cube.updateUV();
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void tryAddToHeight(float delta)
+	{
+		Element cube = manager.getSelectedElement();
+		if (cube != null)
+		{
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					cube.addHeight(delta);
+				}
+
+				@Override
+				public void undo()
+				{
+					cube.addHeight(-delta);
+				}
+
+				@Override
+				public void update()
+				{
+					cube.updateUV();
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
+	private void tryAddToDepth(float delta)
+	{
+		Element cube = manager.getSelectedElement();
+		if (cube != null)
+		{
+			UndoQueue.performPush(new UndoQueue.Task()
+			{
+				@Override
+				public void perform()
+				{
+					cube.addDepth(delta);
+				}
+
+				@Override
+				public void undo()
+				{
+					cube.addDepth(-delta);
+				}
+
+				@Override
+				public void update()
+				{
+					cube.updateUV();
+					manager.updateValues();
+				}
+			});
+		}
+	}
+
 	public void initProperties()
 	{
+		Runnable trySetWidth = () ->
+		{
+			Element element = manager.getSelectedElement();
+			if (element != null)
+			{
+				double oldWidth = element.getWidth();
+				double newWidth = Parser.parseDouble(xSizeField.getText(), element.getWidth());
+				
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setWidth(newWidth);
+					}
+	
+					public void undo()
+					{
+						element.setWidth(oldWidth);
+					}
+	
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
+			}			
+		};
+		
 		Font defaultFont = new Font("SansSerif", Font.BOLD, 20);
 		xSizeField.setSize(new Dimension(62, 30));
 		xSizeField.setFont(defaultFont);
@@ -76,14 +290,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setWidth(Parser.parseDouble(xSizeField.getText(), element.getWidth()));
-						element.updateUV();
-						manager.updateValues();
-					}
-
+					trySetWidth();
 				}
 			}
 		});
@@ -92,16 +299,39 @@ public class SizePanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setWidth(Parser.parseDouble(xSizeField.getText(), element.getWidth()));
-					element.updateUV();
-					manager.updateValues();
-				}
+				trySetWidth();
 			}
 		});
 
+		Runnable trySetHeight = () ->
+		{
+			Element element = manager.getSelectedElement();
+			if (element != null)
+			{
+				double oldHeight = element.getHeight();
+				double newHeight = Parser.parseDouble(ySizeField.getText(), element.getHeight());
+				
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setHeight(newHeight);
+					}
+	
+					public void undo()
+					{
+						element.setHeight(oldHeight);
+					}
+	
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
+			}			
+		};
+		
 		ySizeField.setSize(new Dimension(62, 30));
 		ySizeField.setFont(defaultFont);
 		ySizeField.setHorizontalAlignment(JTextField.CENTER);
@@ -112,14 +342,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setHeight(Parser.parseDouble(ySizeField.getText(), element.getHeight()));
-						element.updateUV();
-						manager.updateValues();
-					}
-
+					trySetHeight();
 				}
 			}
 		});
@@ -128,16 +351,39 @@ public class SizePanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setHeight(Parser.parseDouble(ySizeField.getText(), element.getHeight()));
-					element.updateUV();
-					manager.updateValues();
-				}
+				trySetHeight();
 			}
 		});
 
+		Runnable trySetDepth = () ->
+		{
+			Element element = manager.getSelectedElement();
+			if (element != null)
+			{
+				double oldDepth = element.getDepth();
+				double newDepth = Parser.parseDouble(zSizeField.getText(), element.getDepth());
+				
+				UndoQueue.performPush(new UndoQueue.Task()
+				{
+					public void perform()
+					{
+						element.setDepth(newDepth);
+					}
+	
+					public void undo()
+					{
+						element.setDepth(oldDepth);
+					}
+	
+					public void update()
+					{
+						element.updateUV();
+						manager.updateValues();
+					}
+				});
+			}			
+		};
+		
 		zSizeField.setSize(new Dimension(62, 30));
 		zSizeField.setFont(defaultFont);
 		zSizeField.setHorizontalAlignment(JTextField.CENTER);
@@ -148,14 +394,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 			{
 				if (e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
-					Element element = manager.getSelectedElement();
-					if (element != null)
-					{
-						element.setDepth(Parser.parseDouble(zSizeField.getText(), element.getDepth()));
-						element.updateUV();
-						manager.updateValues();
-					}
-
+					trySetDepth();
 				}
 			}
 		});
@@ -164,32 +403,13 @@ public class SizePanel extends JPanel implements IValueUpdater
 			@Override
 			public void focusLost(FocusEvent e)
 			{
-				Element element = manager.getSelectedElement();
-				if (element != null)
-				{
-					element.setDepth(Parser.parseDouble(zSizeField.getText(), element.getDepth()));
-					element.updateUV();
-					manager.updateValues();
-				}
+				trySetDepth();
 			}
 		});
 
 		btnPlusX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addWidth(0.1F);
-				}
-				else
-				{
-					cube.addWidth(1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
-			}
+			tryAddToWidth((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0F : 0.1F);
 		});
 		btnPlusX.setPreferredSize(new Dimension(62, 30));
 		btnPlusX.setFont(defaultFont);
@@ -197,20 +417,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnPlusY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addHeight(0.1F);
-				}
-				else
-				{
-					cube.addHeight(1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
-			}
+			tryAddToHeight((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0F : 0.1F);
 		});
 		btnPlusY.setPreferredSize(new Dimension(62, 30));
 		btnPlusY.setFont(defaultFont);
@@ -218,20 +425,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnPlusZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addDepth(0.1F);
-				}
-				else
-				{
-					cube.addDepth(1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
-			}
+			tryAddToDepth((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? 1.0F : 0.1F);
 		});
 		btnPlusZ.setPreferredSize(new Dimension(62, 30));
 		btnPlusZ.setFont(defaultFont);
@@ -239,20 +433,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnNegX.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addWidth(-0.1F);
-				}
-				else
-				{
-					cube.addWidth(-1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
-			}
+			tryAddToWidth((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? -1.0F : -0.1F);
 		});
 		btnNegX.setPreferredSize(new Dimension(62, 30));
 		btnNegX.setFont(defaultFont);
@@ -260,20 +441,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnNegY.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addHeight(-0.1F);
-				}
-				else
-				{
-					cube.addHeight(-1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
-			}
+			tryAddToHeight((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? -1.0F : -0.1F);
 		});
 		btnNegY.setPreferredSize(new Dimension(62, 30));
 		btnNegY.setFont(defaultFont);
@@ -281,20 +449,7 @@ public class SizePanel extends JPanel implements IValueUpdater
 
 		btnNegZ.addActionListener(e ->
 		{
-			if (manager.getSelectedElement() != null)
-			{
-				Element cube = manager.getSelectedElement();
-				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == 1)
-				{
-					cube.addDepth(-0.1F);
-				}
-				else
-				{
-					cube.addDepth(-1.0F);
-				}
-				cube.updateUV();
-				manager.updateValues();
-			}
+			tryAddToDepth((e.getModifiers() & ActionEvent.SHIFT_MASK) == 0 ? -1.0F : -0.1F);
 		});
 		btnNegZ.setPreferredSize(new Dimension(62, 30));
 		btnNegZ.setFont(defaultFont);
