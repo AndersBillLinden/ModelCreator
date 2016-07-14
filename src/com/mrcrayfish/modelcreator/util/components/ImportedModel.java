@@ -5,11 +5,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
+import com.mrcrayfish.modelcreator.ForgeImporter.BlockState;
 import com.mrcrayfish.modelcreator.texture.ForgeZipFile;
 
 public class ImportedModel implements Comparable<ImportedModel> 
 {
-	public static Pattern blockJsonPattern = Pattern.compile("assets/minecraft/models/block/([^\\.]+)\\.json");
+	public static Pattern blockJsonPattern
+		= Pattern.compile("assets/minecraft/models/block/([^\\.]+)\\.json");
 	
 	private ForgeZipFile file;
 	private ZipEntry entry;
@@ -38,12 +40,6 @@ public class ImportedModel implements Comparable<ImportedModel>
 	{
 		return name.compareTo(other.name);
 	}
-	
-	public ArrayList<String> GetVariants()
-	{
-		//entry.
-		return null;
-	}
 
 	public ForgeZipFile getFile()
 	{
@@ -53,5 +49,13 @@ public class ImportedModel implements Comparable<ImportedModel>
 	public ZipEntry getEntry()
 	{
 		return entry;
+	}
+
+	public BlockState[] getBlockStates()
+	{
+		ArrayList<BlockState> result = new ArrayList<BlockState>();
+		String filename = name = "assets/minecraft/blockstates/" + entry.getName() + ".json";
+
+		return result.toArray(new BlockState[0]);
 	}
 }

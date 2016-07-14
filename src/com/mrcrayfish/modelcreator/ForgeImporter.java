@@ -20,6 +20,7 @@ import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.element.Face;
 import com.mrcrayfish.modelcreator.texture.PendingZipFileTexture;
 import com.mrcrayfish.modelcreator.util.components.ImportedModel;
+import com.mrcrayfish.modelcreator.util.components.Table;
 
 public class ForgeImporter
 {
@@ -90,7 +91,7 @@ public class ForgeImporter
 			}
 			
 			loadTextures(obj);
-						
+
 			if (obj.has("parent") && obj.get("parent").isJsonPrimitive())
 			{
 				String parent = obj.get("parent").getAsString();
@@ -119,7 +120,7 @@ public class ForgeImporter
 
 					if (texture.startsWith("#"))
 					{
-						textureMap.put(entry.getKey(), textureMap.get(texture.replace("#", "")));
+						texture = textureMap.get(texture);
 					}
 					else
 					{
@@ -129,7 +130,7 @@ public class ForgeImporter
 						}
 						else
 						{
-							textureMap.put(entry.getKey().replace("#", ""), texture);
+							textureMap.put(texture, entry.getKey());
 						}
 					}
 					manager.addPendingTexture(new PendingZipFileTexture(model.getFile(), texture, textureMap));
@@ -321,6 +322,17 @@ public class ForgeImporter
 					face.setCullface(true);
 				}
 			}
+		}
+	}
+
+	public static class BlockState
+	{
+		@Table.Header(name = "Block state")
+		public String name;
+
+		public BlockState(String name)
+		{
+			this.name = name;
 		}
 	}
 }

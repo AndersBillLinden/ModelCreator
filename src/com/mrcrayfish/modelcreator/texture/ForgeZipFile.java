@@ -16,6 +16,8 @@ import java.util.zip.ZipFile;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
+import com.mrcrayfish.modelcreator.ForgeImporter.BlockState;
+import com.mrcrayfish.modelcreator.ITextureLoader;
 import com.mrcrayfish.modelcreator.util.components.ImportedModel;
 
 public class ForgeZipFile
@@ -69,7 +71,7 @@ public class ForgeZipFile
 		return out.toString();		
 	}
 	
-	public Texture loadTexture(ZipEntry image)
+	public Texture loadTexture(ZipEntry image, ITextureLoader loader)
 	{
 		Texture result = null;
 
@@ -77,12 +79,11 @@ public class ForgeZipFile
 		{
 			ZipFile zipFile = new ZipFile(jar);
 			InputStream stream = zipFile.getInputStream(image);
-			result = TextureLoader.getTexture("PNG", stream);
+			result = loader.getTexture("PNG", stream);
 			zipFile.close();
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -118,7 +119,6 @@ public class ForgeZipFile
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

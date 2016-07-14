@@ -42,7 +42,6 @@ public class ImportFromMinecraftDialog
 		ArrayList<String> versions = ForgeImporter.GetAvailableMinecraftVersions();
 
 		JComboBox<String> cbxVersions = new JComboBox<String>(versions.toArray(new String[0]));
-		JComboBox<String> cbxModelVariants = new JComboBox<String>();
 		JTextArea ta = new JTextArea();
 		JScrollPane ta_sp = new JScrollPane(ta);
 		ta_sp.setPreferredSize(new Dimension(200, 200));
@@ -50,6 +49,11 @@ public class ImportFromMinecraftDialog
 		cbxVersions.setSelectedIndex(-1);
 
 		Table<ImportedModel> table = new Table<ImportedModel>(new ImportedModel());
+		
+		Table<ForgeImporter.BlockState> tblBlockStates
+			= new Table<ForgeImporter.BlockState>(new ForgeImporter.BlockState(null));
+		
+		tblBlockStates.setPreferredSize(new Dimension(200, 200));
 		
 		ArrayList<ImportedModel> list = new ArrayList<ImportedModel>();
 		
@@ -76,6 +80,8 @@ public class ImportFromMinecraftDialog
 				String version = (String)cbxVersions.getSelectedItem();
 				okButton.setEnabled(true);
 				ForgeZipFile zipFile = new ForgeZipFile(version);
+				//ForgeImporter.BlockState[] blockStates = record.getBlockStates();
+				//tblBlockStates.setContents(blockStates);
 				String json = zipFile.openModel(record);
 				ta.setText(json);
 			}
@@ -103,11 +109,10 @@ public class ImportFromMinecraftDialog
 				HGap.withhWidth(15),
 				new VBox
 				(
-					new JLabel("Model variants:"),
+					new JLabel("Block states:"),
 					VGap.withhHeight(3),
-					new VStretchBox(cbxModelVariants),
-					VGap.withhHeight(15),
-					ta_sp
+					tblBlockStates,
+					VGap.withhHeight(15)
 				)
 			)
 		);

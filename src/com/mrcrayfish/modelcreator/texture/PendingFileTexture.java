@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
+import com.mrcrayfish.modelcreator.ITextureLoader;
+
 public class PendingFileTexture implements IPendingTexture
 {
 	private File texture;
@@ -36,7 +38,7 @@ public class PendingFileTexture implements IPendingTexture
 		this.callback = callback;
 	}
 
-	public void load()
+	public void load(ITextureLoader textureLoader)
 	{
 		try
 		{
@@ -46,7 +48,7 @@ public class PendingFileTexture implements IPendingTexture
 			if (texture == null)
 			{
 				FileInputStream is = new FileInputStream(this.texture);
-				texture = TextureLoader.getTexture("PNG", is);
+				texture = textureLoader.getTexture("PNG", is);
 				result = TextureManager.loadExternalTexture(this.texture, this.meta);
 				is.close();
 			}

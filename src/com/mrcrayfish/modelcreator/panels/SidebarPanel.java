@@ -244,7 +244,10 @@ public class SidebarPanel extends JPanel implements ElementManager
 	@Override
 	public void addPendingTexture(IPendingTexture texture)
 	{
-		creator.pendingTextures.add(texture);
+		synchronized(creator)
+		{
+			creator.pendingTextures.add(texture);
+		}
 	}
 
 	public ModelCreator getCreator()

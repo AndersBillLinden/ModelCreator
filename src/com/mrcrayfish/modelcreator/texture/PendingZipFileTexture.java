@@ -6,6 +6,8 @@ import java.util.zip.ZipEntry;
 
 import org.newdawn.slick.opengl.Texture;
 
+import com.mrcrayfish.modelcreator.ITextureLoader;
+
 public class PendingZipFileTexture implements IPendingTexture
 {
 	private String texture;
@@ -27,31 +29,36 @@ public class PendingZipFileTexture implements IPendingTexture
 		this.callback = callback;		
 	}
 
-	public void load()
+	public void load(ITextureLoader textureLoader)
 	{
 		try
 		{
 			boolean result = false;
 			
 			if (texture.startsWith("#"))
-				texture = textureMap.get(texture.substring(1));
-			
-			ZipEntry textureEntry = new ZipEntry("assets/minecraft/textures/" + texture + ".png");
-
-			String fileName = textureEntry.getName().replace(".png", "").replaceAll("\\d*$", "");
-			Texture texture = TextureManager.getTexture(fileName);
-			if (texture == null)
 			{
-				texture = zipfile.loadTexture(textureEntry);
-				result = TextureManager.addToCache(zipfile, textureEntry, texture);
+				texture = textureMap.get(texture);
 			}
 			else
 			{
-				result = true;
+				ZipEntry textureEntry = new ZipEntry("assets/minecraft/textures/" + texture + ".png");
+	
+				String fileName = textureEntry.getName();
+				Texture texture = TextureManager.getTexture(fileName);
+				
+				if (texture == null)
+				{
+					texture = zipfile.loadTexture(textureEntry, textureLoader);
+					result = TextureManager.addToCache(zipfile, textureEntry, texture);
+				}
+				else
+				{
+					result = true;
+				}
+				
+				if (callback != null)
+					callback.callback(result, fileName);
 			}
-
-			if (callback != null)
-				callback.callback(result, fileName);
 		}
 		catch (IOException e)
 		{

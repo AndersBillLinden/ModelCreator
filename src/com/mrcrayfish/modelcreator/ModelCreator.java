@@ -225,13 +225,17 @@ public class ModelCreator extends JFrame
 
 		Dimension newDim;
 
+		TextureLoader textureLoader = new TextureLoader();
 		while (!Display.isCloseRequested() && !getCloseRequested())
 		{
-			for (IPendingTexture texture : pendingTextures)
+			synchronized(this)
 			{
-				texture.load();
+				for (IPendingTexture texture : pendingTextures)
+				{
+					texture.load(textureLoader);
+				}
+				pendingTextures.clear();
 			}
-			pendingTextures.clear();
 
 			newDim = newCanvasSize.getAndSet(null);
 
