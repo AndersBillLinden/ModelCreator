@@ -79,6 +79,11 @@ public class ForgeZipFile
 		{
 			ZipFile zipFile = new ZipFile(jar);
 			InputStream stream = zipFile.getInputStream(image);
+			
+			if (stream == null)
+			{
+				System.out.println("stream == null");
+			}
 			result = loader.getTexture("PNG", stream);
 			zipFile.close();
 		}

@@ -246,6 +246,10 @@ public class SidebarPanel extends JPanel implements ElementManager
 	{
 		synchronized(creator)
 		{
+			if (texture == null)
+			{
+				System.out.println("texture == null");
+			}
 			creator.pendingTextures.add(texture);
 		}
 	}

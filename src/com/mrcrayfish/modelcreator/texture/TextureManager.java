@@ -115,8 +115,7 @@ public class TextureManager
 			texture.release();
 			return false;
 		}
-		//ImageIcon icon = upscale(new ImageIcon(image.getAbsolutePath()), 256);
-		textureCache.add(new TextureEntry(image.getName().replace(".png", "").replaceAll("\\d*$", ""), texture));
+		textureCache.add(new TextureEntry(image.getName(), texture));
 		return true;
 	}
 	

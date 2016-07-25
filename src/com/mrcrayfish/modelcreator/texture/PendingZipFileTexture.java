@@ -31,6 +31,9 @@ public class PendingZipFileTexture implements IPendingTexture
 
 	public void load(ITextureLoader textureLoader)
 	{
+		if (texture == null)
+			return;
+
 		try
 		{
 			boolean result = false;
