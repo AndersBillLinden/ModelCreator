@@ -1,11 +1,9 @@
 package com.mrcrayfish.modelcreator.util.components;
 
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
-import com.mrcrayfish.modelcreator.ForgeImporter.BlockState;
 import com.mrcrayfish.modelcreator.texture.ForgeZipFile;
 
 public class ImportedModel implements Comparable<ImportedModel> 
@@ -18,7 +16,7 @@ public class ImportedModel implements Comparable<ImportedModel>
 	public ImportedModel()
 	{
 	}
-	
+
 	public ImportedModel(ForgeZipFile file, ZipEntry entry)
 	{
 		this.file = file;
@@ -50,12 +48,15 @@ public class ImportedModel implements Comparable<ImportedModel>
 	{
 		return entry;
 	}
-
-	public BlockState[] getBlockStates()
+	
+	public static class BlockState
 	{
-		ArrayList<BlockState> result = new ArrayList<BlockState>();
-		String filename = name = "assets/minecraft/blockstates/" + entry.getName() + ".json";
+		@Table.Header(name = "Block state")
+		public String name;
 
-		return result.toArray(new BlockState[0]);
-	}
+		public BlockState(String name)
+		{
+			this.name = name;
+		}
+	}	
 }

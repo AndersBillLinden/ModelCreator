@@ -58,61 +58,9 @@ public class Table<T> extends JScrollPane
 		fields = fieldList.toArray(new Field[0]);
 		
 		setViewportView(table);
-				
-		table.setModel(new TableModel()
-		{
-			@Override
-			public Object getValueAt(int row, int column)
-			{
-				return null;
-			}
 
-			@Override
-			public void addTableModelListener(TableModelListener arg0)
-			{
-			}
+		clearContents();
 
-			@Override
-			public Class<?> getColumnClass(int arg0)
-			{
-				return fields[arg0].getType(); 
-			}
-
-			@Override
-			public int getColumnCount()
-			{
-				return fields.length;
-			}
-
-			@Override
-			public String getColumnName(int arg0)
-			{
-				return fieldNames[arg0];
-			}
-
-			@Override
-			public int getRowCount()
-			{
-				return 0;
-			}
-
-			@Override
-			public boolean isCellEditable(int arg0, int arg1)
-			{
-				return false;
-			}
-
-			@Override
-			public void removeTableModelListener(TableModelListener arg0)
-			{
-			}
-
-			@Override
-			public void setValueAt(Object arg0, int arg1, int arg2)
-			{
-			}
-		});
-		
 		ListSelectionModel selectionModel = table.getSelectionModel();
 
 		selectionModel.addListSelectionListener(new ListSelectionListener() {
@@ -205,6 +153,66 @@ public class Table<T> extends JScrollPane
 		});
 		
 		((JLabel)table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);		
+	}
+
+	public void clearContents()
+	{
+		this.records = null;
+		table.setModel(new TableModel()
+		{
+			@Override
+			public Object getValueAt(int row, int column)
+			{
+				return null;
+			}
+
+			@Override
+			public void addTableModelListener(TableModelListener arg0)
+			{
+			}
+
+			@Override
+			public Class<?> getColumnClass(int arg0)
+			{
+				return fields[arg0].getType(); 
+			}
+
+			@Override
+			public int getColumnCount()
+			{
+				return fields.length;
+			}
+
+			@Override
+			public String getColumnName(int arg0)
+			{
+				return fieldNames[arg0];
+			}
+
+			@Override
+			public int getRowCount()
+			{
+				return 0;
+			}
+
+			@Override
+			public boolean isCellEditable(int arg0, int arg1)
+			{
+				return false;
+			}
+
+			@Override
+			public void removeTableModelListener(TableModelListener arg0)
+			{
+			}
+
+			@Override
+			public void setValueAt(Object arg0, int arg1, int arg2)
+			{
+			}
+		});
+		
+		((JLabel)table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);				
 	}
 	
 	private Field[] getFields(T dummy)

@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 
 import com.google.gson.JsonArray;
@@ -18,9 +20,10 @@ import com.google.gson.JsonParser;
 import com.mrcrayfish.modelcreator.element.Element;
 import com.mrcrayfish.modelcreator.element.ElementManager;
 import com.mrcrayfish.modelcreator.element.Face;
+import com.mrcrayfish.modelcreator.forge.ArchiveModel;
 import com.mrcrayfish.modelcreator.texture.PendingZipFileTexture;
 import com.mrcrayfish.modelcreator.util.components.ImportedModel;
-import com.mrcrayfish.modelcreator.util.components.Table;
+import com.mrcrayfish.modelcreator.util.components.ImportedModel.BlockState;
 
 public class ForgeImporter
 {
@@ -44,23 +47,78 @@ public class ForgeImporter
 		this.ignoreTextures = true;
 	}
 
-	public void importFromJSON()
+	public ArchiveModel importFromJSON()
 	{
+		ArchiveModel result = null;
 		manager.clearElements();
 		
 		try
 		{
 			InputStream stream = model.getFile().getInputStream(model.getEntry());
 			BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-			readComponents(reader, manager);
+			result = readComponents(reader, manager);
 			reader.close();
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
+		
+		return result;
 	}
 
+	public static BlockState[] getBlockStates(ImportedModel model)
+	{
+		String filename = "assets/minecraft/blockstates/" + model.name + ".json";
+
+		try
+		{
+			ZipEntry entry = new ZipEntry(filename);
+			InputStream stream = model.getFile().getInputStream(entry);
+			
+			if (stream == null)
+				return null;
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+			
+			JsonParser parser = new JsonParser();
+			JsonElement read = parser.parse(reader);
+						
+			if (read.isJsonObject())
+			{
+				JsonObject obj = read.getAsJsonObject();
+
+				// load variants
+				if (obj.has("variants") && obj.get("variants").isJsonObject())
+				{
+					JsonObject variants = obj.get("variants").getAsJsonObject();
+					
+					Set<Entry<String, JsonElement>> keys = variants.entrySet();
+					
+					List<BlockState> result = new ArrayList<BlockState>();
+					
+					for(Entry<String, JsonElement> k: keys)
+					{
+						String key = k.getKey();
+						result.add(new BlockState(key));
+					}
+					
+					return result.toArray(new BlockState[0]);
+				}
+			}
+			else
+				return null;
+			
+			reader.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+		
 	private void readComponents(BufferedReader reader, ElementManager manager) throws IOException
 	{
 		JsonParser parser = new JsonParser();
@@ -158,102 +216,8 @@ public class ForgeImporter
 		
 	private void readElement(JsonObject obj, ElementManager manager)
 	{
-		String name = "Element";
-		JsonArray from = null;
-		JsonArray to = null;
-
-		if (obj.has("name") && obj.get("name").isJsonPrimitive())
-		{
-			name = obj.get("name").getAsString();
-		}
-		else if (obj.has("comment") && obj.get("comment").isJsonPrimitive())
-		{
-			name = obj.get("comment").getAsString();
-		}
-		if (obj.has("from") && obj.get("from").isJsonArray())
-		{
-			from = obj.get("from").getAsJsonArray();
-		}
-		if (obj.has("to") && obj.get("to").isJsonArray())
-		{
-			to = obj.get("to").getAsJsonArray();
-		}
-
-		if (from != null && to != null)
-		{
-			double x = from.get(0).getAsDouble();
-			double y = from.get(1).getAsDouble();
-			double z = from.get(2).getAsDouble();
-
-			double w = to.get(0).getAsDouble() - x;
-			double h = to.get(1).getAsDouble() - y;
-			double d = to.get(2).getAsDouble() - z;
-
-			Element element = new Element(w, h, d);
-			element.setName(name);
-			element.setStartX(x);
-			element.setStartY(y);
-			element.setStartZ(z);
-
-			if (obj.has("rotation") && obj.get("rotation").isJsonObject())
-			{
-				JsonObject rot = obj.get("rotation").getAsJsonObject();
-
-				if (rot.has("origin") && rot.get("origin").isJsonArray())
-				{
-					JsonArray origin = rot.get("origin").getAsJsonArray();
-
-					double ox = origin.get(0).getAsDouble();
-					double oy = origin.get(1).getAsDouble();
-					double oz = origin.get(2).getAsDouble();
-
-					element.setOriginX(ox);
-					element.setOriginY(oy);
-					element.setOriginZ(oz);
-				}
-
-				if (rot.has("axis") && rot.get("axis").isJsonPrimitive())
-				{
-					element.setPrevAxis(Element.parseAxisString(rot.get("axis").getAsString()));
-				}
-
-				if (rot.has("angle") && rot.get("angle").isJsonPrimitive())
-				{
-					element.setRotation(rot.get("angle").getAsDouble());
-				}
-
-				if (rot.has("rescale") && rot.get("rescale").isJsonPrimitive())
-				{
-					element.setRescale(rot.get("rescale").getAsBoolean());
-				}
-			}
-
-			element.setShade(true);
-			if (obj.has("shade") && obj.get("shade").isJsonPrimitive())
-			{
-				element.setShade(obj.get("shade").getAsBoolean());
-			}
-
-			for (Face face : element.getAllFaces())
-			{
-				face.setEnabled(false);
-			}
-
-			if (obj.has("faces") && obj.get("faces").isJsonObject())
-			{
-				JsonObject faces = obj.get("faces").getAsJsonObject();
-
-				for (String faceName : faceNames)
-				{
-					if (faces.has(faceName) && faces.get(faceName).isJsonObject())
-					{
-						readFace(faces.get(faceName).getAsJsonObject(), faceName, element);
-					}
-				}
-			}
-
-			manager.addElement(element);
-		}
+		
+		
 	}
 
 	private void readFace(JsonObject obj, String name, Element element)
@@ -322,17 +286,6 @@ public class ForgeImporter
 					face.setCullface(true);
 				}
 			}
-		}
-	}
-
-	public static class BlockState
-	{
-		@Table.Header(name = "Block state")
-		public String name;
-
-		public BlockState(String name)
-		{
-			this.name = name;
 		}
 	}
 }

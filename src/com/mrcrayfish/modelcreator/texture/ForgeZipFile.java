@@ -16,7 +16,6 @@ import java.util.zip.ZipFile;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
-import com.mrcrayfish.modelcreator.ForgeImporter.BlockState;
 import com.mrcrayfish.modelcreator.ITextureLoader;
 import com.mrcrayfish.modelcreator.util.components.ImportedModel;
 
@@ -50,17 +49,17 @@ public class ForgeZipFile
 			final char[] buffer = new char[bufferSize];
 			try (Reader in = new InputStreamReader(stream, "UTF-8"))
 			{
-		        for (;;)
-		        {
-		            int rsz = in.read(buffer, 0, buffer.length);
-		            if (rsz < 0)
-		                break;
-		            out.append(buffer, 0, rsz);
-		        }
-		    }
-		    catch (UnsupportedEncodingException ex)
+				for (;;)
+				{
+				    int rsz = in.read(buffer, 0, buffer.length);
+				    if (rsz < 0)
+				        break;
+				    out.append(buffer, 0, rsz);
+				}
+			}
+			catch (UnsupportedEncodingException ex)
 			{
-		    }
+			}
 			
 			zipFile.close();
 		}
@@ -82,8 +81,9 @@ public class ForgeZipFile
 			
 			if (stream == null)
 			{
-				System.out.println("stream == null");
+				throw new RuntimeException("Could not load texture");
 			}
+
 			result = loader.getTexture("PNG", stream);
 			zipFile.close();
 		}

@@ -36,7 +36,7 @@ public class ImportFromMinecraftDialog
 		dialog = createDialog(parent, dialogContent);
 		showDialog(dialog);
 	}
-		
+
 	private static JPanel getDialogContent(JFrame parent, ImportListener listener)
 	{
 		ArrayList<String> versions = ForgeImporter.GetAvailableMinecraftVersions();
@@ -50,8 +50,8 @@ public class ImportFromMinecraftDialog
 
 		Table<ImportedModel> table = new Table<ImportedModel>(new ImportedModel());
 		
-		Table<ForgeImporter.BlockState> tblBlockStates
-			= new Table<ForgeImporter.BlockState>(new ForgeImporter.BlockState(null));
+		Table<ImportedModel.BlockState> tblBlockStates
+			= new Table<ImportedModel.BlockState>(new ImportedModel.BlockState(null));
 		
 		tblBlockStates.setPreferredSize(new Dimension(200, 200));
 		
@@ -65,7 +65,7 @@ public class ImportFromMinecraftDialog
 			ImportedModel[] models = file.getModelJsonFiles();
 
 			table.setContents(models);
-		});		
+		});	
 
 		table.setPreferredSize(new Dimension(200, 400));
 		
@@ -80,8 +80,13 @@ public class ImportFromMinecraftDialog
 				String version = (String)cbxVersions.getSelectedItem();
 				okButton.setEnabled(true);
 				ForgeZipFile zipFile = new ForgeZipFile(version);
-				//ForgeImporter.BlockState[] blockStates = record.getBlockStates();
-				//tblBlockStates.setContents(blockStates);
+				ImportedModel.BlockState[] blockStates = ForgeImporter.getBlockStates(record);
+				
+				if (blockStates != null)
+					tblBlockStates.setContents(blockStates);
+				else
+					tblBlockStates.clearContents();
+
 				String json = zipFile.openModel(record);
 				ta.setText(json);
 			}
